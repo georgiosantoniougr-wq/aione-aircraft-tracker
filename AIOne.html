@@ -1,0 +1,2954 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AIOne Aircraft Tracker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <style>
+        * { box-sizing: border-box; }
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 100%;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        h1 { 
+            color: #2c3e50; 
+            text-align: center; 
+            margin-bottom: 30px;
+        }
+        
+        .creator-credit {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 11px;
+            color: #95a5a6;
+            font-style: italic;
+        }
+        
+        /* === MINIMAL AUTH BAR === */
+        .auth-bar {
+            background: #3498db;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+        }
+        .auth-info { flex: 1; }
+        .auth-buttons { display: flex; gap: 10px; }
+        .auth-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid white;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .login-form {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+            border: 1px solid #bdc3c7;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            h1 {
+                font-size: 1.5em;
+                margin-bottom: 20px;
+            }
+            .filters {
+                flex-direction: column;
+            }
+            .filter-group {
+                min-width: 100%;
+            }
+            .dashboard {
+                padding: 15px;
+            }
+            .presentation-card {
+                padding: 12px;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .conflict-badge {
+                margin-left: 0;
+                margin-top: 5px;
+                align-self: flex-end;
+            }
+            
+            .mobile-home-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr 1fr;
+                gap: 10px;
+                margin: 15px 0;
+            }
+            .mobile-stat-card {
+                background: white;
+                padding: 15px;
+                border-radius: 8px;
+                text-align: center;
+                border: 1px solid #bdc3c7;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .mobile-stat-number {
+                font-size: 20px;
+                font-weight: bold;
+                color: #2c3e50;
+            }
+            .mobile-stat-label {
+                font-size: 12px;
+                color: #7f8c8d;
+                margin-top: 5px;
+            }
+            
+            /* FIXED: Collapsible Sections */
+            .mobile-aircraft-section {
+                margin: 20px 0;
+            }
+            .mobile-section-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 12px 15px;
+                background: #3498db;
+                color: white;
+                border-radius: 8px;
+                margin-bottom: 10px;
+                cursor: pointer;
+            }
+            .mobile-section-header h3 {
+                margin: 0;
+                font-size: 16px;
+            }
+            .mobile-section-toggle {
+                background: none;
+                border: none;
+                color: white;
+                font-size: 18px;
+                cursor: pointer;
+            }
+            .mobile-aircraft-container {
+                border: 1px solid #ecf0f1;
+                border-radius: 8px;
+                overflow: hidden;
+            }
+            .mobile-aircraft-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 15px;
+                border-bottom: 1px solid #ecf0f1;
+                background: white;
+                cursor: pointer;
+                transition: background-color 0.2s;
+            }
+            .mobile-aircraft-row:active {
+                background: #f8f9fa;
+            }
+            .mobile-aircraft-row:last-child {
+                border-bottom: none;
+            }
+            .mobile-msn {
+                font-weight: bold;
+                color: #2c3e50;
+                font-size: 16px;
+                flex: 1;
+            }
+            .mobile-codes {
+                display: flex;
+                gap: 15px;
+                align-items: center;
+                flex: 1;
+                justify-content: center;
+            }
+            .mobile-code {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 5px;
+            }
+            .mobile-logo-placeholder {
+                width: 30px;
+                height: 20px;
+                background: #ecf0f1;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+                color: #7f8c8d;
+                border-radius: 3px;
+                font-size: 10px;
+            }
+            .mobile-logo {
+                max-width: 30px;
+                max-height: 20px;
+                object-fit: contain;
+            }
+            /* CHANGED: Mobile status replaced with delivery date */
+            .mobile-delivery-date {
+                font-size: 11px;
+                padding: 4px 8px;
+                border-radius: 12px;
+                background: #ecf0f1;
+                color: #2c3e50;
+                flex: 1;
+                text-align: right;
+                font-weight: bold;
+            }
+            .status-FAL { background: #ffeaa7; color: #856404; }
+            .status-Delivery { background: #d1ecf1; color: #0c5460; }
+            .status-Storage { background: #e2e3e5; color: #383d41; }
+            .status-Archived { 
+                background: #95a5a6; 
+                color: white;
+                opacity: 0.7;
+            }
+            
+            .aircraft-counter {
+                text-align: center;
+                color: #7f8c8d;
+                font-size: 12px;
+                margin-top: 10px;
+            }
+            
+            #desktop-aircraft-table {
+                display: none;
+            }
+            
+            .creator-credit {
+                position: static;
+                text-align: center;
+                margin-top: 10px;
+                font-size: 10px;
+            }
+
+            .aircraft-filters-section {
+                margin: 10px 0 20px 0;
+            }
+
+            /* FIXED: Better tab layout for mobile */
+            .tab-container {
+                margin: 10px 0;
+            }
+            .tabs {
+                flex-wrap: wrap;
+            }
+            .tab {
+                padding: 10px 15px;
+                font-size: 14px;
+                flex: 1;
+                min-width: 45%;
+                text-align: center;
+                margin-bottom: 5px;
+            }
+            .tab-content {
+                padding: 15px;
+            }
+
+            /* NEW: Mobile presentations section */
+            .mobile-presentations-section {
+                margin: 20px 0;
+            }
+        }
+        
+        .aircraft-filters-section {
+            margin: 20px 0;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #bdc3c7;
+        }
+        .aircraft-filters-section h3 {
+            margin-top: 0;
+            color: #2c3e50;
+            text-align: center;
+        }
+        
+        .filters {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+        .filter-group {
+            flex: 1;
+            min-width: 150px;
+        }
+        .filter-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #bdc3c7;
+            border-radius: 5px;
+        }
+        
+        .archived-notice {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            text-align: center;
+        }
+        
+        .aircraft-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .aircraft-table th, .aircraft-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        .aircraft-table th {
+            background: #34495e;
+            color: white;
+            cursor: pointer;
+        }
+        .aircraft-table th:hover {
+            background: #2c3e50;
+        }
+        .aircraft-table tr:hover {
+            background: #f8f9fa;
+        }
+        .msn-cell {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .archived-row {
+            opacity: 0.7;
+            background-color: #f8f9fa;
+        }
+        .archived-row:hover {
+            background-color: #e9ecef;
+        }
+        
+        .logo-cell {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .aircraft-logos {
+            display: flex;
+            gap: 15px;
+            margin: 10px 0;
+        }
+        .logo-container {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        .mobile-logo-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .airline-logo {
+            max-width: 80px;
+            max-height: 40px;
+            object-fit: contain;
+        }
+        .mobile-logo {
+            max-width: 40px;
+            max-height: 25px;
+        }
+        .logo-placeholder {
+            width: 80px;
+            height: 40px;
+            background: #ecf0f1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #7f8c8d;
+            border-radius: 3px;
+        }
+        .mobile-logo-placeholder {
+            width: 40px;
+            height: 25px;
+            font-size: 10px;
+        }
+        
+        /* FIXED: Better aircraft details layout */
+        .aircraft-details {
+            background: #ecf0f1;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            max-width: 100%;
+            overflow: hidden;
+        }
+        .detail-section {
+            margin: 10px 0;
+            padding: 12px;
+            background: white;
+            border-radius: 5px;
+            border: 1px solid #bdc3c7;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 6px 0;
+            padding: 6px;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        .detail-label {
+            font-weight: bold;
+            color: #2c3e50;
+            min-width: 120px;
+        }
+        .detail-value {
+            color: #34495e;
+            flex: 1;
+            text-align: right;
+        }
+        .msn-header {
+            font-size: 20px;
+            font-weight: bold;
+            color: #2c3e50;
+            text-align: center;
+            margin: 8px 0;
+            padding: 8px;
+            background: #3498db;
+            color: white;
+            border-radius: 5px;
+        }
+        
+        button { 
+            background: #3498db;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .edit-btn {
+            background: #27ae60;
+        }
+        .back-btn {
+            background: #95a5a6;
+        }
+        .add-btn {
+            background: #e67e22;
+            padding: 12px 20px;
+            font-size: 16px;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .clear-filters {
+            background: #e74c3c;
+        }
+        .archive-btn {
+            background: #95a5a6;
+        }
+        .unarchive-btn {
+            background: #f39c12;
+        }
+        .export-btn {
+            background: #9b59b6;
+        }
+        .import-btn {
+            background: #1abc9c;
+        }
+        .clear-data-btn {
+            background: #e74c3c;
+            margin: 10px 0;
+        }
+        .done-btn {
+            background: #27ae60;
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .form-group { 
+            margin: 15px 0; 
+        }
+        input, select, textarea { 
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #bdc3c7;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        input, select {
+            text-transform: uppercase;
+        }
+        textarea {
+            text-transform: none;
+            font-family: Arial, sans-serif;
+        }
+        
+        /* FIXED: Date input styling */
+        input[type="date"] {
+            position: relative;
+        }
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            background: transparent;
+            bottom: 0;
+            color: transparent;
+            cursor: pointer;
+            height: auto;
+            left: 0;
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: auto;
+        }
+        
+        .input-container {
+            position: relative;
+        }
+        .suggestions {
+            border: 1px solid #bdc3c7;
+            border-top: none;
+            max-height: 150px;
+            overflow-y: auto;
+            display: none;
+            position: absolute;
+            background: white;
+            width: 100%;
+            z-index: 100;
+        }
+        .suggestion-item {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        .suggestion-item:hover {
+            background: #3498db;
+            color: white;
+        }
+        
+        .status-FAL { border-left-color: #e74c3c; }
+        .status-Delivery { border-left-color: #27ae60; }
+        .status-Storage { border-left-color: #f39c12; }
+        .status-Archived { border-left-color: #95a5a6; }
+        
+        .sort-indicator {
+            margin-left: 5px;
+        }
+
+        .dashboard {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 2px solid #3498db;
+        }
+        .dashboard h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .presentation-card {
+            background: white;
+            border: 1px solid #bdc3c7;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .presentation-card:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .presentation-card.conflict {
+            border-left: 4px solid #e74c3c;
+            background: #ffeaa7;
+        }
+        .presentation-card.partial {
+            border-left: 4px solid #f39c12;
+        }
+        .presentation-card.normal {
+            border-left: 4px solid #3498db;
+        }
+        .presentation-info {
+            flex: 1;
+        }
+        .presentation-msn {
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 16px;
+        }
+        .presentation-type {
+            font-weight: bold;
+            margin: 5px 0;
+            color: #2c3e50;
+        }
+        .presentation-datetime {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        .presentation-location {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        .conflict-badge {
+            background: #e74c3c;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        .presentation-details-full {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #ecf0f1;
+            display: none;
+        }
+        .presentation-details-full div {
+            margin: 3px 0;
+            font-size: 13px;
+        }
+
+        /* FIXED: Better tab container layout */
+        .tab-container {
+            margin: 15px 0;
+            border: 1px solid #bdc3c7;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #3498db;
+            margin-bottom: 0;
+            background: #f8f9fa;
+        }
+        .tab {
+            padding: 12px 20px;
+            background: #ecf0f1;
+            border: none;
+            cursor: pointer;
+            margin-right: 0;
+            border-radius: 0;
+            font-weight: bold;
+            color: #2c3e50;
+            flex: 1;
+            text-align: center;
+        }
+        .tab.active {
+            background: #3498db;
+            color: white;
+        }
+        .tab-content {
+            display: none;
+            padding: 20px;
+            background: white;
+            border-radius: 0;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        
+        .presentation-item {
+            background: white;
+            border: 1px solid #bdc3c7;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .presentation-item.partial {
+            border-left: 4px solid #f39c12;
+            background: #fff9e6;
+        }
+        .presentation-item.scheduled {
+            border-left: 4px solid #3498db;
+        }
+        .presentation-item.completed {
+            border-left: 4px solid #27ae60;
+            opacity: 0.8;
+        }
+        
+        .presentation-details {
+            flex: 1;
+        }
+        
+        .conflict-warning {
+            background: #ffeaa7;
+            border: 1px solid #fdcb6e;
+            color: #856404;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .presentation-master-list {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            display: none;
+        }
+
+        .presentation-form-group {
+            margin: 10px 0;
+        }
+        .presentation-form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .presentation-stats {
+            display: flex;
+            gap: 15px;
+            margin: 10px 0;
+        }
+        .stat-box {
+            flex: 1;
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            border: 1px solid #bdc3c7;
+        }
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .stat-label {
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+
+        .master-list-toggle {
+            background: #95a5a6;
+            margin: 10px 0;
+        }
+
+        .representative-item {
+            background: white;
+            border: 1px solid #bdc3c7;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #mobile-home-stats,
+        #mobile-aircraft-section,
+        #mobile-presentations-section {
+            display: none;
+        }
+
+        .sort-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        .sort-control-group {
+            flex: 1;
+            min-width: 150px;
+        }
+        .sort-control-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 14px;
+        }
+
+        /* NEW: Expand/Collapse button for presentations */
+        .expand-presentations-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px auto;
+            display: block;
+            font-size: 14px;
+        }
+
+        .expand-presentations-btn:hover {
+            background: #2980b9;
+        }
+
+        /* NEW: Fleet/Deliveries tab system */
+        .fleet-deliveries-tabs {
+            margin: 20px 0;
+        }
+
+        .fleet-deliveries-container {
+            border: 1px solid #bdc3c7;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        /* NEW: Upcoming deliveries compact view */
+        .upcoming-deliveries-compact {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+
+        .delivery-card {
+            background: white;
+            border: 1px solid #bdc3c7;
+            border-radius: 8px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .delivery-card:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
+        .delivery-msn {
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .delivery-codes {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .delivery-code {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .delivery-date {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-top: 8px;
+            font-weight: bold;
+        }
+
+        .delivery-status {
+            font-size: 11px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            background: #ecf0f1;
+            color: #2c3e50;
+            margin-top: 5px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="creator-credit">Est. by G.Antoniou</div>
+        <h1>AIOne Aircraft Tracker</h1>
+        
+        <!-- MINIMAL AUTH BAR -->
+        <div class="auth-bar">
+            <div class="auth-info">
+                <span id="auth-status">Not logged in</span>
+                <span id="auth-user" style="margin-left: 10px;"></span>
+            </div>
+            <div class="auth-buttons">
+                <button id="login-btn" class="auth-btn" onclick="showLoginForm()">Login</button>
+                <button id="logout-btn" class="auth-btn" onclick="logout()" style="display: none;">Logout</button>
+            </div>
+        </div>
+
+        <!-- LOGIN FORM (hidden by default) -->
+        <div id="login-form" class="login-form" style="display: none;">
+            <div class="form-group">
+                <input type="email" id="login-email" placeholder="Email" style="text-transform: none;">
+            </div>
+            <div class="form-group">
+                <input type="password" id="login-password" placeholder="Password">
+            </div>
+            <button onclick="login()" style="background: #27ae60; color: white; padding: 10px; border: none; border-radius: 5px; width: 100%;">Login</button>
+            <div style="text-align: center; margin-top: 10px;">
+                <small>No account? <a href="http://localhost:5000/register.html" target="_blank">Register here</a></small>
+            </div>
+        </div>
+        
+        <div id="overview-view">
+            <button class="add-btn" onclick="showAddForm()">Add New Aircraft</button>
+            
+            <div id="mobile-home-stats" class="mobile-home-grid">
+                <div class="mobile-stat-card">
+                    <div class="mobile-stat-number" id="mobile-aircraft-count">0</div>
+                    <div class="mobile-stat-label">Total Aircrafts</div>
+                </div>
+                <div class="mobile-stat-card">
+                    <div class="mobile-stat-number" id="mobile-presentations-count">0</div>
+                    <div class="mobile-stat-label">Upcoming</div>
+                </div>
+                <div class="mobile-stat-card">
+                    <div class="mobile-stat-number" id="mobile-conflicts-count">0</div>
+                    <div class="mobile-stat-label">Conflicts</div>
+                </div>
+            </div>
+
+            <!-- FIXED: Filters moved ABOVE aircraft sections on mobile -->
+            <div class="aircraft-filters-section">
+                <h3>Filter Aircrafts</h3>
+                <div class="filters">
+                    <div class="filter-group">
+                        <select id="filter-owner" onchange="applyFilters()">
+                            <option value="">All Owners</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <select id="filter-operator" onchange="applyFilters()">
+                            <option value="">All Operators</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <select id="filter-status" onchange="applyFilters()">
+                            <option value="">All Status</option>
+                            <option value="FAL">FAL</option>
+                            <option value="Delivery">Delivery</option>
+                            <option value="Storage">Storage</option>
+                            <option value="Archived">Archived</option>
+                        </select>
+                    </div>
+                    <button class="clear-filters" onclick="clearFilters()">Clear Filters</button>
+                </div>
+            </div>
+
+            <!-- UPDATED: Mobile aircraft sections -->
+            <div id="mobile-aircraft-section" class="mobile-aircraft-section">
+                <div class="mobile-section-header" onclick="toggleSection('upcoming-deliveries')">
+                    <h3>Upcoming Deliveries</h3>
+                    <button class="mobile-section-toggle">-</button>
+                </div>
+                <div id="upcoming-deliveries" class="mobile-aircraft-container">
+                    <!-- Upcoming deliveries will be loaded here -->
+                </div>
+                <div class="aircraft-counter" id="upcoming-deliveries-counter">
+                    Showing 0 upcoming deliveries
+                </div>
+
+                <div class="mobile-section-header" onclick="toggleSection('full-fleet')">
+                    <h3>Full Fleet</h3>
+                    <button class="mobile-section-toggle">+</button>
+                </div>
+                <div id="full-fleet" class="mobile-aircraft-container" style="display: none;">
+                    <!-- Full fleet will be loaded here -->
+                </div>
+                <div class="aircraft-counter" id="full-fleet-counter">
+                    Total: 0 aircraft
+                </div>
+            </div>
+
+            <!-- NEW: Mobile presentations section -->
+            <div id="mobile-presentations-section" class="mobile-presentations-section">
+                <div class="mobile-section-header" onclick="toggleSection('mobile-presentations')">
+                    <h3>Upcoming Presentations</h3>
+                    <button class="mobile-section-toggle">-</button>
+                </div>
+                <div id="mobile-presentations" class="mobile-aircraft-container">
+                    <!-- Mobile presentations will be loaded here -->
+                </div>
+            </div>
+
+            <!-- DESKTOP: Fleet and Deliveries Tab System -->
+            <div class="fleet-deliveries-tabs">
+                <div class="fleet-deliveries-container">
+                    <div class="tabs">
+                        <button class="tab active" onclick="switchFleetTab('full-fleet-view')">Full Fleet View</button>
+                        <button class="tab" onclick="switchFleetTab('upcoming-deliveries-tab')">Upcoming Deliveries</button>
+                    </div>
+                    
+                    <div id="full-fleet-view" class="tab-content active">
+                        <table class="aircraft-table" id="desktop-aircraft-table">
+                            <thead>
+                                <tr>
+                                    <th onclick="sortAircraft('msn')">MSN</th>
+                                    <th onclick="sortAircraft('owner')">Owner</th>
+                                    <th onclick="sortAircraft('operator')">Operator</th>
+                                    <th onclick="sortAircraft('deliveryDate')">Est. Delivery Start</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="aircraft-table-body">
+                                <!-- Aircraft rows will appear here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div id="upcoming-deliveries-tab" class="tab-content">
+                        <div id="upcoming-deliveries-compact" class="upcoming-deliveries-compact">
+                            <!-- Upcoming deliveries cards will appear here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KEEP THE ORIGINAL PRESENTATIONS DASHBOARD -->
+            <div class="dashboard">
+                <h2>Upcoming Presentations</h2>
+                
+                <div class="sort-controls">
+                    <div class="sort-control-group">
+                        <label>Sort by:</label>
+                        <select id="presentation-sort-field" onchange="updateSortedPresentations()">
+                            <option value="datetime">Date</option>
+                            <option value="msn">MSN</option>
+                            <option value="owner">Owner</option>
+                            <option value="operator">Operator</option>
+                        </select>
+                    </div>
+                    <div class="sort-control-group">
+                        <label>Direction:</label>
+                        <select id="presentation-sort-direction" onchange="updateSortedPresentations()">
+                            <option value="asc">Ascending</option>
+                            <option value="desc">Descending</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div id="upcoming-presentations">
+                    <!-- Dashboard content will appear here -->
+                </div>
+            </div>
+
+            <div class="filters">
+                <div class="filter-group">
+                    <button class="export-btn" onclick="exportData()">Export Data</button>
+                </div>
+                <div class="filter-group">
+                    <input type="file" id="import-file" accept=".json" style="display: none;" onchange="importData(event)">
+                    <button class="import-btn" onclick="document.getElementById('import-file').click()">Import Data</button>
+                </div>
+                <div class="filter-group">
+                    <button class="clear-data-btn" onclick="clearAllData()">Clear All Data</button>
+                </div>
+                <div class="filter-group">
+                    <button class="master-list-toggle" onclick="toggleMasterList()">Presentations List</button>
+                </div>
+                <div class="filter-group">
+                    <button class="master-list-toggle" onclick="toggleRepresentativesList()">Manage Representatives</button>
+                </div>
+            </div>
+
+            <div id="presentation-master-list" class="presentation-master-list">
+                <h3>Presentation Master List</h3>
+                <div class="filters">
+                    <div class="filter-group">
+                        <input type="text" id="new-presentation-name" placeholder="New Presentation Name" style="text-transform: none;">
+                    </div>
+                    <div class="filter-group">
+                        <input type="number" id="new-presentation-duration" placeholder="Duration (minutes)" min="15" step="15">
+                    </div>
+                    <button onclick="addPresentationType()">Add Presentation Type</button>
+                </div>
+                <div id="master-presentation-list">
+                    <!-- Master list will appear here -->
+                </div>
+            </div>
+
+            <div id="representatives-list" class="presentation-master-list" style="display: none;">
+                <h3>Manage Representatives</h3>
+                <div class="filters">
+                    <div class="filter-group">
+                        <input type="text" id="new-representative-name" placeholder="New Representative Name" style="text-transform: none;">
+                    </div>
+                    <button onclick="addRepresentative()">Add Representative</button>
+                </div>
+                <div id="representatives-container">
+                    <!-- Representatives will appear here -->
+                </div>
+            </div>
+            
+            <div id="archived-notice" class="archived-notice" style="display: none;">
+                Showing archived aircrafts. These are normally hidden from the main overview.
+            </div>
+        </div>
+
+        <div id="detail-view" style="display: none;">
+            <button class="back-btn" onclick="showOverview()">Back to Overview</button>
+            <div id="aircraft-detail-content">
+                <!-- Aircraft details will appear here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALS REMAIN THE SAME -->
+    <div id="aircraft-modal" class="modal">
+        <div class="modal-content">
+            <h2 id="modal-title">Add New Aircraft</h2>
+            <form id="aircraft-form">
+                <input type="hidden" id="edit-index">
+                
+                <div class="form-group">
+                    <input type="text" id="msn" placeholder="MSN" required>
+                </div>
+                
+                <div class="form-group">
+                    <input type="text" id="aircraft-type" placeholder="Aircraft Type (e.g., A320neo, 737 MAX)" style="text-transform: uppercase;" oninput="this.value = this.value.toUpperCase()">
+                </div>
+                
+                <div class="form-group input-container">
+                    <input type="text" id="owner" placeholder="Owner (3-digit ICAO)" required maxlength="3" 
+                           oninput="showSuggestions('owner', this.value)">
+                    <div id="owner-suggestions" class="suggestions"></div>
+                </div>
+                
+                <div class="form-group input-container">
+                    <input type="text" id="operator" placeholder="Operator (3-digit ICAO)" required maxlength="3"
+                           oninput="showSuggestions('operator', this.value)">
+                    <div id="operator-suggestions" class="suggestions"></div>
+                </div>
+                
+                <div class="form-group">
+                    <input type="text" id="registration" placeholder="Registration">
+                </div>
+                
+                <div class="form-group">
+                    <!-- FIXED: Date input with proper calendar -->
+                    <input type="date" id="delivery-date" required>
+                </div>
+                
+                <div class="form-group">
+                    <select id="status">
+                        <option value="FAL">FAL</option>
+                        <option value="Delivery">Delivery</option>
+                        <option value="Storage">Storage</option>
+                        <option value="Archived">Archived</option>
+                    </select>
+                </div>
+
+                <h3>Engine & APU Details</h3>
+                
+                <div class="form-group">
+                    <input type="text" id="engines-type" placeholder="Engines Type" style="text-transform: uppercase;">
+                </div>
+                
+                <div class="form-group">
+                    <input type="text" id="eng1-sn" placeholder="ENG#1 S/N" style="text-transform: uppercase;">
+                </div>
+                
+                <div class="form-group">
+                    <input type="text" id="eng2-sn" placeholder="ENG#2 S/N" style="text-transform: uppercase;">
+                </div>
+                
+                <div class="form-group">
+                    <input type="text" id="apu-type" placeholder="APU Type" style="text-transform: uppercase;">
+                </div>
+                
+                <div class="form-group">
+                    <input type="text" id="apu-sn" placeholder="APU S/N" style="text-transform: uppercase;">
+                </div>
+
+                <h3>Concessions</h3>
+                
+                <div class="form-group">
+                    <input type="number" id="concessions-c" placeholder="Concessions C" min="0">
+                </div>
+                
+                <div class="form-group">
+                    <input type="number" id="concessions-r" placeholder="Concessions R" min="0">
+                </div>
+
+                <h3>Remarks</h3>
+                <div class="form-group">
+                    <textarea id="aircraft-remarks" placeholder="Aircraft remarks and important notes..." rows="3" style="text-transform: none;"></textarea>
+                </div>
+
+                <button type="submit">Save Aircraft</button>
+                <button type="button" onclick="hideModal()">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="presentation-modal" class="modal">
+        <div class="modal-content">
+            <h2 id="presentation-modal-title">Schedule Presentation</h2>
+            <form id="presentation-form">
+                <input type="hidden" id="presentation-aircraft-index">
+                <input type="hidden" id="presentation-edit-index">
+                
+                <div class="presentation-form-group">
+                    <label>Presentation Type:</label>
+                    <select id="presentation-type" required>
+                        <option value="">Select Presentation Type</option>
+                    </select>
+                </div>
+                
+                <div class="presentation-form-group">
+                    <label>Date & Time:</label>
+                    <input type="datetime-local" id="presentation-datetime" required>
+                </div>
+                
+                <div class="presentation-form-group">
+                    <label>Completion Status:</label>
+                    <select id="presentation-completion">
+                        <option value="full">Full</option>
+                        <option value="partial">Partial</option>
+                    </select>
+                </div>
+                
+                <div class="presentation-form-group">
+                    <label>Location:</label>
+                    <input type="text" id="presentation-location" placeholder="LOCATION" style="text-transform: uppercase;">
+                </div>
+                
+                <div class="presentation-form-group">
+                    <label>Representative (Optional):</label>
+                    <select id="presentation-representative">
+                        <option value="">Select Representative</option>
+                    </select>
+                </div>
+                
+                <div class="presentation-form-group">
+                    <label>Number of QLBs:</label>
+                    <input type="number" id="presentation-qubs" placeholder="Number of QLBs" min="0">
+                </div>
+                
+                <div class="presentation-form-group">
+                    <label>Remarks:</label>
+                    <textarea id="presentation-remarks" placeholder="Remarks" rows="3"></textarea>
+                </div>
+                
+                <div id="conflict-warning" class="conflict-warning" style="display: none;">
+                    ⚠️ Time conflict detected with existing presentations! You can still proceed, but both presentations will be marked with conflict warnings.
+                </div>
+
+                <button type="submit">Schedule Presentation</button>
+                <button type="button" onclick="hidePresentationModal()">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // ==================== MINIMAL BACKEND INTEGRATION ====================
+        const API_BASE = 'http://192.168.178.101:5000/api';
+        let authToken = localStorage.getItem('aione_token');
+        let currentUser = null;
+
+        // NEW: Presentations expansion state
+        let presentationsExpanded = false;
+        let mobilePresentationsExpanded = false;
+
+        // Simple auth functions
+async function login() {
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+
+    if (!email || !password) {
+        alert('Please enter both email and password');
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE}/auth/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            authToken = data.token;
+            currentUser = data.user;
+            localStorage.setItem('aione_token', authToken);
+            localStorage.setItem('aione_user', JSON.stringify(currentUser));
+            updateAuthUI();
+            hideLoginForm();
+            loadAircraftFromBackend();
+        } else {
+            alert('Login failed: ' + data.error);
+        }
+    } catch (error) {
+        alert('Login error: ' + error.message);
+    }
+}
+        function logout() {
+            authToken = null;
+            currentUser = null;
+            localStorage.removeItem('aione_token');
+            localStorage.removeItem('aione_user');
+            updateAuthUI();
+            loadLocalData();
+        }
+
+        function showLoginForm() {
+            const loginForm = document.getElementById('login-form');
+            if (loginForm) loginForm.style.display = 'block';
+        }
+
+        function hideLoginForm() {
+            const loginForm = document.getElementById('login-form');
+            if (loginForm) loginForm.style.display = 'none';
+        }
+
+        function updateAuthUI() {
+            const authStatus = document.getElementById('auth-status');
+            const authUser = document.getElementById('auth-user');
+            const loginBtn = document.getElementById('login-btn');
+            const logoutBtn = document.getElementById('logout-btn');
+
+            if (authToken && currentUser) {
+                if (authStatus) authStatus.textContent = 'Logged in:';
+                if (authUser) authUser.textContent = `${currentUser.username} (${currentUser.role})`;
+                if (loginBtn) loginBtn.style.display = 'none';
+                if (logoutBtn) logoutBtn.style.display = 'block';
+            } else {
+                if (authStatus) authStatus.textContent = 'Not logged in';
+                if (authUser) authUser.textContent = '';
+                if (loginBtn) loginBtn.style.display = 'block';
+                if (logoutBtn) logoutBtn.style.display = 'none';
+            }
+        }
+
+        // Backend data loading
+        async function loadAircraftFromBackend() {
+            try {
+                const response = await fetch(`${API_BASE}/aircraft`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    aircraft = data.data || [];
+                    updateDashboard();
+                    updateMobileLayout();
+                } else {
+                    throw new Error('Failed to load from backend');
+                }
+            } catch (error) {
+                console.log('Using local data instead');
+                loadLocalData();
+            }
+        }
+
+        // ==================== YOUR ORIGINAL JAVASCRIPT ====================
+        // Airline data
+        const airlineData = {
+            'I2L': { name: 'AERCAP Holdings', logo: 'https://logo.clearbit.com/aercap.com' },
+            'G8E': { name: 'AERCAP Holdings', logo: 'https://logo.clearbit.com/aercap.com' },
+            'ETD': { name: 'Etihad Airways', logo: 'https://logo.clearbit.com/etihad.com' },
+            'QTR': { name: 'Qatar Airways', logo: 'https://logo.clearbit.com/qatarairways.com' },
+            'THA': { name: 'Thai Airways', logo: 'https://logo.clearbit.com/thaiairways.com' },
+            'CHH': { name: 'Hainan Airlines', logo: 'https://logo.clearbit.com/hnair.com' },
+            'SPQ': { name: 'Sun PhuQuoc Airways', logo: 'https://via.placeholder.com/80x40?text=SPQ' },
+            'AHY': { name: 'Azerbaijan Airlines', logo: 'https://logo.clearbit.com/azal.az' },
+            'UAL': { name: 'United Airlines', logo: 'https://logo.clearbit.com/united.com' },
+            'DAL': { name: 'Delta Air Lines', logo: 'https://logo.clearbit.com/delta.com' },
+            'QFA': { name: 'Qantas Airways', logo: 'https://logo.clearbit.com/qantas.com.au' },
+            'JST': { name: 'Jetstar Airways', logo: 'https://logo.clearbit.com/jetstar.com' },
+            'WZZ': { name: 'WIZZ Air', logo: 'https://logo.clearbit.com/wizzair.com' },
+            'VIV': { name: 'Viva Aerobus', logo: 'https://logo.clearbit.com/vivaaerobus.com' }
+        };
+
+        const airlineCodes = Object.keys(airlineData);
+        
+        // Load aircraft data - FIXED: Ensure presentations is always an array
+        let aircraft = JSON.parse(localStorage.getItem('aione_aircraft')) || [
+            {
+                "msn": "12826",
+                "aircraftType": "A320neo",
+                "owner": "G8E",
+                "operator": "CHH",
+                "registration": "",
+                "deliveryDate": "2025-10-30",
+                "status": "FAL",
+                "enginesType": "",
+                "eng1Sn": "",
+                "eng2Sn": "",
+                "apuType": "",
+                "apuSn": "",
+                "concessionsC": 0,
+                "concessionsR": 0,
+                "remarks": "",
+                "presentations": []
+            },
+            {
+                "msn": "12802",
+                "aircraftType": "A321neo",
+                "owner": "I2L",
+                "operator": "ETD",
+                "registration": "",
+                "deliveryDate": "2025-10-31",
+                "status": "FAL",
+                "enginesType": "LEAP",
+                "eng1Sn": "1",
+                "eng2Sn": "2",
+                "apuType": "WWQ",
+                "apuSn": "3",
+                "concessionsC": 40,
+                "concessionsR": 1,
+                "remarks": "High concessions - needs attention",
+                "presentations": []
+            },
+            {
+                "msn": "12791",
+                "aircraftType": "A320neo",
+                "owner": "I2L",
+                "operator": "ETD",
+                "registration": "",
+                "deliveryDate": "2025-11-28",
+                "status": "FAL",
+                "enginesType": "LEAP",
+                "eng1Sn": "",
+                "eng2Sn": "",
+                "apuType": "",
+                "apuSn": "",
+                "concessionsC": 0,
+                "concessionsR": 0,
+                "remarks": "",
+                "presentations": []
+            }
+        ];
+        
+        // FIXED: Ensure all aircraft have presentations array
+        aircraft.forEach(ac => {
+            if (!ac.presentations || !Array.isArray(ac.presentations)) {
+                ac.presentations = [];
+            }
+        });
+        
+        let currentSort = { field: 'msn', direction: 'asc' };
+        let currentFilters = { owner: '', operator: '', status: '' };
+        let filteredAircraft = [];
+
+        // Presentation Data
+        const defaultPresentationTypes = [
+            { id: 1, name: "Wing Assembly Inspection", duration: 120 },
+            { id: 2, name: "Fuselage Join Inspection", duration: 90 },
+            { id: 3, name: "Systems Integration Test", duration: 180 },
+            { id: 4, name: "Cabin Completion Check", duration: 120 },
+            { id: 5, name: "First Flight Readiness", duration: 60 }
+        ];
+
+        let presentationTypes = JSON.parse(localStorage.getItem('aione_presentation_types')) || defaultPresentationTypes;
+        let representatives = JSON.parse(localStorage.getItem('aione_representatives')) || ["John Smith", "Maria Garcia", "David Chen"];
+
+        // ==================== MISSING FUNCTIONS TO FIX INITIALIZATION ERROR ====================
+
+        // Update filter dropdown options
+        function updateFilterOptions() {
+            const ownerFilter = document.getElementById('filter-owner');
+            const operatorFilter = document.getElementById('filter-operator');
+            
+            if (!ownerFilter || !operatorFilter) return;
+            
+            // Get unique owners and operators
+            const owners = [...new Set(aircraft.map(ac => ac.owner).filter(Boolean))];
+            const operators = [...new Set(aircraft.map(ac => ac.operator).filter(Boolean))];
+            
+            // Clear existing options (except first option)
+            while (ownerFilter.children.length > 1) ownerFilter.removeChild(ownerFilter.lastChild);
+            while (operatorFilter.children.length > 1) operatorFilter.removeChild(operatorFilter.lastChild);
+            
+            // Add owner options
+            owners.forEach(owner => {
+                const option = document.createElement('option');
+                option.value = owner;
+                option.textContent = `${owner} - ${airlineData[owner]?.name || 'Unknown'}`;
+                ownerFilter.appendChild(option);
+            });
+            
+            // Add operator options
+            operators.forEach(operator => {
+                const option = document.createElement('option');
+                option.value = operator;
+                option.textContent = `${operator} - ${airlineData[operator]?.name || 'Unknown'}`;
+                operatorFilter.appendChild(option);
+            });
+        }
+
+        // Apply filters to aircraft list - FIXED: Hide archived aircraft by default
+        function applyFilters() {
+            const ownerFilter = document.getElementById('filter-owner').value;
+            const operatorFilter = document.getElementById('filter-operator').value;
+            const statusFilter = document.getElementById('filter-status').value;
+            
+            currentFilters = {
+                owner: ownerFilter,
+                operator: operatorFilter,
+                status: statusFilter
+            };
+            
+            updateDashboard();
+            updateMobileLayout();
+            updateDeliveriesTab();
+        }
+
+        // Clear all filters
+        function clearFilters() {
+            document.getElementById('filter-owner').value = '';
+            document.getElementById('filter-operator').value = '';
+            document.getElementById('filter-status').value = '';
+            
+            currentFilters = { owner: '', operator: '', status: '' };
+            updateDashboard();
+            updateMobileLayout();
+            updateDeliveriesTab();
+        }
+
+        // Get filtered aircraft based on current filters - FIXED: Hide archived by default
+        function getFilteredAircraft() {
+            return aircraft.filter(ac => {
+                const matchesOwner = !currentFilters.owner || ac.owner === currentFilters.owner;
+                const matchesOperator = !currentFilters.operator || ac.operator === currentFilters.operator;
+                const matchesStatus = !currentFilters.status || ac.status === currentFilters.status;
+                
+                // Only show archived aircraft when specifically filtering for them
+                const showArchived = currentFilters.status === 'Archived';
+                const isArchived = ac.status === 'Archived';
+                
+                return matchesOwner && matchesOperator && matchesStatus && (showArchived || !isArchived);
+            });
+        }
+
+        // Sort aircraft
+        function sortAircraft(field) {
+            if (currentSort.field === field) {
+                currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSort.field = field;
+                currentSort.direction = 'asc';
+            }
+            updateDashboard();
+        }
+
+        // Update the main dashboard
+        function updateDashboard() {
+            filteredAircraft = getFilteredAircraft();
+            
+            // Sort aircraft
+            filteredAircraft.sort((a, b) => {
+                let aValue = a[currentSort.field];
+                let bValue = b[currentSort.field];
+                
+                // Handle date sorting
+                if (currentSort.field === 'deliveryDate') {
+                    aValue = aValue ? new Date(aValue) : new Date('9999-12-31');
+                    bValue = bValue ? new Date(bValue) : new Date('9999-12-31');
+                }
+                
+                // Handle string sorting
+                if (typeof aValue === 'string') aValue = aValue.toUpperCase();
+                if (typeof bValue === 'string') bValue = bValue.toUpperCase();
+                
+                if (aValue < bValue) return currentSort.direction === 'asc' ? -1 : 1;
+                if (aValue > bValue) return currentSort.direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+            
+            updateAircraftTable();
+            updateUpcomingPresentations();
+            updateMobilePresentations();
+            updateMobileStats();
+        }
+
+        // Update aircraft table WITH LOGOS
+        function updateAircraftTable() {
+            const tbody = document.getElementById('aircraft-table-body');
+            if (!tbody) return;
+            
+            let html = '';
+            
+            filteredAircraft.forEach((ac, index) => {
+                const actualIndex = aircraft.findIndex(a => a.msn === ac.msn);
+                const isArchived = ac.status === 'Archived';
+                
+                html += `
+                    <tr class="${isArchived ? 'archived-row' : ''}">
+                        <td class="msn-cell">${ac.msn}</td>
+                        <td>
+                            <div class="logo-cell">
+                                ${getLogoElement(ac.owner).outerHTML}
+                                <div>${ac.owner} - ${airlineData[ac.owner]?.name || 'Unknown'}</div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="logo-cell">
+                                ${getLogoElement(ac.operator).outerHTML}
+                                <div>${ac.operator} - ${airlineData[ac.operator]?.name || 'Unknown'}</div>
+                            </div>
+                        </td>
+                        <td>${formatDateToDDMMYYYY(ac.deliveryDate)}</td>
+                        <td>${ac.status}</td>
+                        <td>
+                            <button class="edit-btn" onclick="showAircraftDetail(${actualIndex})">View</button>
+                            <button class="edit-btn" onclick="showEditForm(${actualIndex})">Edit</button>
+                            ${isArchived ? 
+                                `<button class="unarchive-btn" onclick="toggleArchive(${actualIndex})">Unarchive</button>` : 
+                                `<button class="archive-btn" onclick="toggleArchive(${actualIndex})">Archive</button>`
+                            }
+                            <button onclick="showPresentationForm(${actualIndex})">Add Presentation</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html;
+            
+            // Show/hide archived notice
+            const archivedNotice = document.getElementById('archived-notice');
+            if (archivedNotice) {
+                archivedNotice.style.display = filteredAircraft.some(ac => ac.status === 'Archived') ? 'block' : 'none';
+            }
+        }
+
+        // Format date to DD-MM-YYYY
+        function formatDateToDDMMYYYY(dateString) {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return 'Invalid Date';
+            
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            
+            return `${day}-${month}-${year}`;
+        }
+
+        // Format datetime for display
+        function formatDateTime(dateTimeString) {
+            if (!dateTimeString) return 'N/A';
+            const date = new Date(dateTimeString);
+            if (isNaN(date.getTime())) return 'Invalid Date';
+            
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            
+            return `${day}-${month}-${year} ${hours}:${minutes}`;
+        }
+
+        // Format time only
+        function formatTime(dateTimeString) {
+            if (!dateTimeString) return 'N/A';
+            const date = new Date(dateTimeString);
+            if (isNaN(date.getTime())) return 'Invalid Date';
+            
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            
+            return `${hours}:${minutes}`;
+        }
+
+        // Show aircraft add form - WITH AUTH CHECK
+        function showAddForm() {
+            // AUTH CHECK - Block if not logged in
+            if (!authToken) {
+                alert('Please log in to add aircraft');
+                showLoginForm();
+                return;
+            }
+            
+            document.getElementById('modal-title').textContent = 'Add New Aircraft';
+            document.getElementById('aircraft-form').reset();
+            document.getElementById('edit-index').value = '';
+            document.getElementById('aircraft-modal').style.display = 'block';
+        }
+
+        // Show aircraft edit form - WITH AUTH CHECK
+        function showEditForm(index) {
+            // AUTH CHECK - Block if not logged in
+            if (!authToken) {
+                alert('Please log in to edit aircraft');
+                showLoginForm();
+                return;
+            }
+            
+            const ac = aircraft[index];
+            document.getElementById('modal-title').textContent = 'Edit Aircraft';
+            document.getElementById('edit-index').value = index;
+            document.getElementById('msn').value = ac.msn;
+            document.getElementById('aircraft-type').value = ac.aircraftType || '';
+            document.getElementById('owner').value = ac.owner;
+            document.getElementById('operator').value = ac.operator;
+            document.getElementById('registration').value = ac.registration || '';
+            document.getElementById('delivery-date').value = ac.deliveryDate;
+            document.getElementById('status').value = ac.status;
+            document.getElementById('engines-type').value = ac.enginesType || '';
+            document.getElementById('eng1-sn').value = ac.eng1Sn || '';
+            document.getElementById('eng2-sn').value = ac.eng2Sn || '';
+            document.getElementById('apu-type').value = ac.apuType || '';
+            document.getElementById('apu-sn').value = ac.apuSn || '';
+            document.getElementById('concessions-c').value = ac.concessionsC || 0;
+            document.getElementById('concessions-r').value = ac.concessionsR || 0;
+            document.getElementById('aircraft-remarks').value = ac.remarks || '';
+            document.getElementById('aircraft-modal').style.display = 'block';
+        }
+
+        // Hide modal
+        function hideModal() {
+            document.getElementById('aircraft-modal').style.display = 'none';
+        }
+
+        // Show suggestions for airline codes
+        function showSuggestions(type, value) {
+            const suggestionsDiv = document.getElementById(`${type}-suggestions`);
+            if (!suggestionsDiv) return;
+            
+            suggestionsDiv.innerHTML = '';
+            suggestionsDiv.style.display = 'none';
+            
+            if (value.length < 1) return;
+            
+            const matches = airlineCodes.filter(code => 
+                code.toLowerCase().includes(value.toLowerCase()) ||
+                airlineData[code].name.toLowerCase().includes(value.toLowerCase())
+            );
+            
+            if (matches.length > 0) {
+                matches.forEach(code => {
+                    const div = document.createElement('div');
+                    div.className = 'suggestion-item';
+                    div.textContent = `${code} - ${airlineData[code].name}`;
+                    div.onclick = () => {
+                        document.getElementById(type).value = code;
+                        suggestionsDiv.style.display = 'none';
+                    };
+                    suggestionsDiv.appendChild(div);
+                });
+                suggestionsDiv.style.display = 'block';
+            }
+        }
+
+        // Hide suggestions when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.matches('.input-container input')) {
+                const suggestions = document.querySelectorAll('.suggestions');
+                suggestions.forEach(s => s.style.display = 'none');
+            }
+        });
+
+        // Aircraft form submission
+        document.getElementById('aircraft-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const editIndex = document.getElementById('edit-index').value;
+            const msn = document.getElementById('msn').value.toUpperCase();
+            const aircraftType = document.getElementById('aircraft-type').value.toUpperCase();
+            const owner = document.getElementById('owner').value.toUpperCase();
+            const operator = document.getElementById('operator').value.toUpperCase();
+            const registration = document.getElementById('registration').value.toUpperCase();
+            const deliveryDate = document.getElementById('delivery-date').value;
+            const status = document.getElementById('status').value;
+            const enginesType = document.getElementById('engines-type').value.toUpperCase();
+            const eng1Sn = document.getElementById('eng1-sn').value.toUpperCase();
+            const eng2Sn = document.getElementById('eng2-sn').value.toUpperCase();
+            const apuType = document.getElementById('apu-type').value.toUpperCase();
+            const apuSn = document.getElementById('apu-sn').value.toUpperCase();
+            const concessionsC = parseInt(document.getElementById('concessions-c').value) || 0;
+            const concessionsR = parseInt(document.getElementById('concessions-r').value) || 0;
+            const remarks = document.getElementById('aircraft-remarks').value;
+            
+            // Check for duplicate MSN (except when editing the same aircraft)
+            if (editIndex === '' && aircraft.some(ac => ac.msn === msn)) {
+                alert('An aircraft with this MSN already exists!');
+                return;
+            }
+            
+            const aircraftData = {
+                msn,
+                aircraftType,
+                owner,
+                operator,
+                registration,
+                deliveryDate,
+                status,
+                enginesType,
+                eng1Sn,
+                eng2Sn,
+                apuType,
+                apuSn,
+                concessionsC,
+                concessionsR,
+                remarks,
+                presentations: editIndex !== '' ? aircraft[editIndex].presentations : []
+            };
+            
+            if (editIndex !== '') {
+                // Update existing aircraft
+                aircraft[editIndex] = aircraftData;
+            } else {
+                // Add new aircraft
+                aircraft.push(aircraftData);
+            }
+            
+            saveData();
+            updateDashboard();
+            updateMobileLayout();
+            hideModal();
+        });
+
+        // Show aircraft details
+        function showAircraftDetail(index) {
+            const ac = aircraft[index];
+            const detailContent = document.getElementById('aircraft-detail-content');
+            
+            let html = `
+                <div class="msn-header">${ac.msn}</div>
+                
+                <div class="aircraft-logos">
+                    <div class="logo-container">
+                        <div>Owner</div>
+                        ${getLogoElement(ac.owner).outerHTML}
+                        <div><strong>${ac.owner}</strong> - ${airlineData[ac.owner]?.name || 'Unknown'}</div>
+                    </div>
+                    <div class="logo-container">
+                        <div>Operator</div>
+                        ${getLogoElement(ac.operator).outerHTML}
+                        <div><strong>${ac.operator}</strong> - ${airlineData[ac.operator]?.name || 'Unknown'}</div>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <h3>Aircraft Information</h3>
+                    <div class="detail-row">
+                        <span class="detail-label">Aircraft Type:</span>
+                        <span class="detail-value">${ac.aircraftType || 'N/A'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Registration:</span>
+                        <span class="detail-value">${ac.registration || 'N/A'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Est. Delivery Start:</span>
+                        <span class="detail-value">${formatDateToDDMMYYYY(ac.deliveryDate)}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Status:</span>
+                        <span class="detail-value">${ac.status}</span>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <h3>Engine & APU Details</h3>
+                    <div class="detail-row">
+                        <span class="detail-label">Engines Type:</span>
+                        <span class="detail-value">${ac.enginesType || 'N/A'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">ENG#1 S/N:</span>
+                        <span class="detail-value">${ac.eng1Sn || 'N/A'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">ENG#2 S/N:</span>
+                        <span class="detail-value">${ac.eng2Sn || 'N/A'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">APU Type:</span>
+                        <span class="detail-value">${ac.apuType || 'N/A'}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">APU S/N:</span>
+                        <span class="detail-value">${ac.apuSn || 'N/A'}</span>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <h3>Concessions</h3>
+                    <div class="detail-row">
+                        <span class="detail-label">Concessions C:</span>
+                        <span class="detail-value">${ac.concessionsC || 0}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Concessions R:</span>
+                        <span class="detail-value">${ac.concessionsR || 0}</span>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <h3>Remarks</h3>
+                    <div class="detail-row">
+                        <span class="detail-value">${ac.remarks || 'No remarks'}</span>
+                    </div>
+                </div>
+                
+                <div style="margin: 20px 0; text-align: center;">
+                    <button class="edit-btn" onclick="showEditForm(${index})">Edit Aircraft</button>
+                    <button onclick="showPresentationForm(${index})">Add Presentation</button>
+                    ${ac.status === 'Archived' ? 
+                        `<button class="unarchive-btn" onclick="toggleArchive(${index})">Unarchive</button>` : 
+                        `<button class="archive-btn" onclick="toggleArchive(${index})">Archive</button>`
+                    }
+                </div>
+            `;
+            
+            // Add presentations if any
+                        // Add presentations if any
+            if (ac.presentations && ac.presentations.length > 0) {
+                // SORT presentations alphabetically by type
+                const sortedPresentations = [...ac.presentations].sort((a, b) => a.type.localeCompare(b.type));
+                
+                html += `
+                    <div class="detail-section">
+                        <h3>Presentations (${sortedPresentations.length})</h3>
+                        ${sortedPresentations.map((pres, presIndex) => `
+                            <div class="presentation-item ${pres.completion || 'full'}">
+                                <div class="presentation-details">
+                                    <div><strong>${pres.type}</strong></div>
+                                    <div>${formatDateTime(pres.datetime)}</div>
+                                    <div>Location: ${pres.location || 'N/A'}</div>
+                                    <div>Completion: ${pres.completion || 'full'}</div>
+                                    ${pres.representative ? `<div>Representative: ${pres.representative}</div>` : ''}
+                                    ${pres.qubs ? `<div>QLBs: ${pres.qubs}</div>` : ''}
+                                    ${pres.remarks ? `<div>Remarks: ${pres.remarks}</div>` : ''}
+                                </div>
+                                <div>
+                                    <button class="edit-btn" onclick="editPresentation(${index}, ${presIndex})">Edit</button>
+                                    <button class="archive-btn" onclick="deletePresentation(${index}, ${presIndex})">Delete</button>
+                                    ${pres.status !== 'completed' ? 
+                                        `<button class="done-btn" onclick="completePresentation(${index}, ${presIndex})">Done</button>` : 
+                                        ''
+                                    }
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+            
+            detailContent.innerHTML = html;
+            document.getElementById('overview-view').style.display = 'none';
+            document.getElementById('detail-view').style.display = 'block';
+        }
+
+        // Show overview
+        function showOverview() {
+            document.getElementById('overview-view').style.display = 'block';
+            document.getElementById('detail-view').style.display = 'none';
+        }
+
+        // Get logo element
+        function getLogoElement(code) {
+            const airline = airlineData[code];
+            if (airline && airline.logo) {
+                const img = document.createElement('img');
+                img.src = airline.logo;
+                img.alt = code;
+                img.className = 'airline-logo';
+                img.onerror = function() {
+                    this.parentNode.innerHTML = `<div class="logo-placeholder">${code}</div>`;
+                };
+                return img;
+            } else {
+                const div = document.createElement('div');
+                div.className = 'logo-placeholder';
+                div.textContent = code;
+                return div;
+            }
+        }
+
+        // Get mobile logo element
+        function getMobileLogoElement(code) {
+            const airline = airlineData[code];
+            if (airline && airline.logo) {
+                const img = document.createElement('img');
+                img.src = airline.logo;
+                img.alt = code;
+                img.className = 'mobile-logo';
+                img.onerror = function() {
+                    this.parentNode.innerHTML = `<div class="mobile-logo-placeholder">${code}</div>`;
+                };
+                return img;
+            } else {
+                const div = document.createElement('div');
+                div.className = 'mobile-logo-placeholder';
+                div.textContent = code;
+                return div;
+            }
+        }
+
+        // CORRECTED: Fleet tab switching function - NOW FOR DELIVERIES
+        function switchFleetTab(tabName) {
+            // Hide all tab contents
+            const tabContents = document.querySelectorAll('.fleet-deliveries-container .tab-content');
+            tabContents.forEach(tab => {
+                if (tab) tab.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            const tabs = document.querySelectorAll('.fleet-deliveries-container .tab');
+            tabs.forEach(tab => {
+                if (tab) tab.classList.remove('active');
+            });
+            
+            // Show selected tab content and activate tab
+            const targetTab = document.getElementById(tabName);
+            const clickedTab = event.target;
+            
+            if (targetTab) targetTab.classList.add('active');
+            if (clickedTab) clickedTab.classList.add('active');
+
+            // If switching to deliveries tab, update the deliveries view
+            if (tabName === 'upcoming-deliveries-tab') {
+                updateDeliveriesTab();
+            }
+        }
+
+        // CORRECTED: Update deliveries in the fleet tab
+        function updateDeliveriesTab() {
+            const container = document.getElementById('upcoming-deliveries-compact');
+            if (!container) return;
+
+            // Get filtered aircraft and sort by delivery date
+            let aircraftToDisplay = getFilteredAircraft();
+            aircraftToDisplay.sort((a, b) => 
+                new Date(a.deliveryDate || '9999-12-31') - new Date(b.deliveryDate || '9999-12-31')
+            );
+            
+            // Show 6 upcoming deliveries
+            const upcomingAircraft = aircraftToDisplay.slice(0, 6);
+
+            if (upcomingAircraft.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 20px; color: #7f8c8d;">No upcoming deliveries match the selected filters.</div>';
+                return;
+            }
+            
+            let html = '';
+            
+            // Create delivery cards
+            upcomingAircraft.forEach((ac) => {
+                const actualIndex = aircraft.findIndex(a => a.msn === ac.msn);
+                html += `
+                    <div class="delivery-card" onclick="showAircraftDetail(${actualIndex})">
+                        <div class="delivery-msn">${ac.msn}</div>
+                        <div class="delivery-codes">
+                            <div class="delivery-code">
+                                ${getMobileLogoElement(ac.owner).outerHTML}
+                                <span style="font-size: 10px; color: #7f8c8d;">${ac.owner}</span>
+                            </div>
+                            <div class="delivery-code">
+                                ${getMobileLogoElement(ac.operator).outerHTML}
+                                <span style="font-size: 10px; color: #7f8c8d;">${ac.operator}</span>
+                            </div>
+                        </div>
+                        <div class="delivery-date">${formatDateToDDMMYYYY(ac.deliveryDate)}</div>
+                        <div class="delivery-status status-${ac.status}">${ac.status}</div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        // NEW: Toggle presentations expansion
+        function togglePresentationsExpansion() {
+            presentationsExpanded = !presentationsExpanded;
+            updateUpcomingPresentations();
+        }
+
+        // NEW: Toggle mobile presentations expansion
+        function toggleMobilePresentationsExpansion() {
+            mobilePresentationsExpanded = !mobilePresentationsExpanded;
+            updateMobilePresentations();
+        }
+
+        // FIXED: Collapsible functions with proper minus sign
+        function toggleSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            const header = section ? section.previousElementSibling : null;
+            const toggleButton = header ? header.querySelector('.mobile-section-toggle') : null;
+            
+            if (!section || !toggleButton) return;
+            
+            if (section.style.display === 'none') {
+                section.style.display = 'block';
+                toggleButton.textContent = '-';
+            } else {
+                section.style.display = 'none';
+                toggleButton.textContent = '+';
+            }
+        }
+
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('aione_aircraft', JSON.stringify(aircraft));
+            localStorage.setItem('aione_presentation_types', JSON.stringify(presentationTypes));
+            localStorage.setItem('aione_representatives', JSON.stringify(representatives));
+        }
+
+        // Update presentation master list - SORTED BY NAME
+        function updatePresentationMasterList() {
+            const container = document.getElementById('master-presentation-list');
+            if (!container) return;
+            
+            // Sort presentation types by name
+            const sortedTypes = [...presentationTypes].sort((a, b) => a.name.localeCompare(b.name));
+            
+            let html = '';
+            
+            sortedTypes.forEach((type, index) => {
+                // Find original index after sorting
+                const originalIndex = presentationTypes.findIndex(t => t.id === type.id);
+                html += `
+                    <div class="presentation-item">
+                        <div class="presentation-details">
+                            <div><strong>${type.name}</strong></div>
+                            <div>Duration: ${type.duration} minutes</div>
+                        </div>
+                        <div>
+                            <button class="archive-btn" onclick="deletePresentationType(${originalIndex})">Delete</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        // Update upcoming presentations
+        function updateUpcomingPresentations() {
+            const container = document.getElementById('upcoming-presentations');
+            if (!container) return;
+            
+            // Get all upcoming presentations
+            let allPresentations = [];
+            aircraft.forEach((ac, acIndex) => {
+                if (ac.presentations && ac.presentations.length > 0) {
+                    ac.presentations.forEach((pres, presIndex) => {
+                        if (pres.status !== 'completed') {
+                            allPresentations.push({
+                                ...pres,
+                                aircraftIndex: acIndex,
+                                presentationIndex: presIndex,
+                                msn: ac.msn,
+                                owner: ac.owner,
+                                operator: ac.operator
+                            });
+                        }
+                    });
+                }
+            });
+            
+            // Sort presentations by datetime
+            allPresentations.sort((a, b) => new Date(a.datetime) - new Date(b.datetime));
+            
+            // Limit to 5 if not expanded
+            const displayPresentations = presentationsExpanded ? allPresentations : allPresentations.slice(0, 5);
+            
+            if (allPresentations.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 20px; color: #7f8c8d;">No upcoming presentations scheduled.</div>';
+                return;
+            }
+            
+            let html = '';
+            
+            displayPresentations.forEach(pres => {
+                const hasConflict = checkPresentationConflict(pres);
+                const completionClass = pres.completion === 'partial' ? 'partial' : 'normal';
+                const conflictClass = hasConflict ? 'conflict' : '';
+                
+                html += `
+                    <div class="presentation-card ${completionClass} ${conflictClass}" onclick="toggleMobilePresentationDetails(this)">
+    <div class="presentation-info">
+        <div class="presentation-msn">
+            ${pres.msn}
+            ${hasConflict ? '<span class="conflict-badge">Conflict</span>' : ''}
+        </div>
+        <div class="presentation-type">${pres.type}</div>
+        <div class="presentation-datetime">${formatDateTime(pres.datetime)}</div>
+        <div class="presentation-location">${pres.location || 'Location not specified'}</div>
+        
+        <div class="presentation-details-full" style="display: none;">
+            <div><strong>Aircraft:</strong> ${pres.msn} (${pres.owner} → ${pres.operator})</div>
+            <div><strong>Completion:</strong> ${pres.completion || 'full'}</div>
+            ${pres.representative ? `<div><strong>Representative:</strong> ${pres.representative}</div>` : ''}
+            ${pres.qubs ? `<div><strong>QLBs:</strong> ${pres.qubs}</div>` : ''}
+            ${pres.remarks ? `<div><strong>Remarks:</strong> ${pres.remarks}</div>` : ''}
+            <div style="margin-top: 10px;">
+                <button class="edit-btn" onclick="event.stopPropagation(); editPresentation(${pres.aircraftIndex}, ${pres.presentationIndex})">Edit</button>
+                <button class="archive-btn" onclick="event.stopPropagation(); deletePresentation(${pres.aircraftIndex}, ${pres.presentationIndex})">Delete</button>
+                <button class="done-btn" onclick="event.stopPropagation(); completePresentation(${pres.aircraftIndex}, ${pres.presentationIndex})">Mark Done</button>
+            </div>
+        </div>
+                            
+                            <div class="presentation-details-full">
+                                <div><strong>Aircraft:</strong> ${pres.msn} (${pres.owner} → ${pres.operator})</div>
+                                <div><strong>Completion:</strong> ${pres.completion || 'full'}</div>
+                                ${pres.representative ? `<div><strong>Representative:</strong> ${pres.representative}</div>` : ''}
+                                ${pres.qubs ? `<div><strong>QLBs:</strong> ${pres.qubs}</div>` : ''}
+                                ${pres.remarks ? `<div><strong>Remarks:</strong> ${pres.remarks}</div>` : ''}
+                                <div style="margin-top: 10px;">
+                                    <button class="edit-btn" onclick="event.stopPropagation(); editPresentation(${pres.aircraftIndex}, ${pres.presentationIndex})">Edit</button>
+                                    <button class="archive-btn" onclick="event.stopPropagation(); deletePresentation(${pres.aircraftIndex}, ${pres.presentationIndex})">Delete</button>
+                                    <button class="done-btn" onclick="event.stopPropagation(); completePresentation(${pres.aircraftIndex}, ${pres.presentationIndex})">Mark Done</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            // Add show more/less button if there are more than 5 presentations
+            if (allPresentations.length > 5) {
+                html += `
+                    <button class="expand-presentations-btn" onclick="togglePresentationsExpansion()">
+                        ${presentationsExpanded ? 'Show Less (5)' : 'Show All (' + allPresentations.length + ')'}
+                    </button>
+                `;
+            }
+            
+            container.innerHTML = html;
+        }
+
+        // NEW: Update mobile presentations
+        function updateMobilePresentations() {
+            const container = document.getElementById('mobile-presentations');
+            if (!container) return;
+            
+            // Get all upcoming presentations
+            let allPresentations = [];
+            aircraft.forEach((ac, acIndex) => {
+                if (ac.presentations && ac.presentations.length > 0) {
+                    ac.presentations.forEach((pres, presIndex) => {
+                        if (pres.status !== 'completed') {
+                            allPresentations.push({
+                                ...pres,
+                                aircraftIndex: acIndex,
+                                presentationIndex: presIndex,
+                                msn: ac.msn,
+                                owner: ac.owner,
+                                operator: ac.operator
+                            });
+                        }
+                    });
+                }
+            });
+            
+            // Sort presentations by datetime
+            allPresentations.sort((a, b) => new Date(a.datetime) - new Date(b.datetime));
+            
+            // Limit to 5 if not expanded
+            const displayPresentations = mobilePresentationsExpanded ? allPresentations : allPresentations.slice(0, 5);
+            
+            if (allPresentations.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 20px; color: #7f8c8d;">No upcoming presentations scheduled.</div>';
+                return;
+            }
+            
+            let html = '';
+            
+            displayPresentations.forEach(pres => {
+                const hasConflict = checkPresentationConflict(pres);
+                const completionClass = pres.completion === 'partial' ? 'partial' : 'normal';
+                const conflictClass = hasConflict ? 'conflict' : '';
+                
+                html += `
+                    <div class="presentation-card ${completionClass} ${conflictClass}" onclick="toggleMobilePresentationDetails(this)">
+                        <div class="presentation-info">
+                            <div class="presentation-msn">
+                                ${pres.msn}
+                                ${hasConflict ? '<span class="conflict-badge">Conflict</span>' : ''}
+                            </div>
+                            <div class="presentation-type">${pres.type}</div>
+                            <div class="presentation-datetime">${formatDateTime(pres.datetime)}</div>
+                            <div class="presentation-location">${pres.location || 'Location not specified'}</div>
+            <div class="presentation-details-full" style="display: none;">
+    <div><strong>Aircraft:</strong> ${pres.msn} (${pres.owner} → ${pres.operator})</div>
+    <div><strong>Completion:</strong> ${pres.completion || 'full'}</div>
+    ${pres.representative ? `<div><strong>Representative:</strong> ${pres.representative}</div>` : ''}
+    ${pres.qubs ? `<div><strong>QLBs:</strong> ${pres.qubs}</div>` : ''}
+    ${pres.remarks ? `<div><strong>Remarks:</strong> ${pres.remarks}</div>` : ''}
+    <div style="margin-top: 10px;">
+        <button class="edit-btn" onclick="event.stopPropagation(); editPresentation(${pres.aircraftIndex}, ${pres.presentationIndex})">Edit</button>
+        <button class="archive-btn" onclick="event.stopPropagation(); deletePresentation(${pres.aircraftIndex}, ${pres.presentationIndex})">Delete</button>
+        <button class="done-btn" onclick="event.stopPropagation(); completePresentation(${pres.aircraftIndex}, ${pres.presentationIndex})">Mark Done</button>
+    </div>
+</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            // Add show more/less button if there are more than 5 presentations
+            if (allPresentations.length > 5) {
+                html += `
+                    <button class="expand-presentations-btn" onclick="toggleMobilePresentationsExpansion()">
+                        ${mobilePresentationsExpanded ? 'Show Less (5)' : 'Show All (' + allPresentations.length + ')'}
+                    </button>
+                `;
+            }
+            
+            container.innerHTML = html;
+        }
+
+        // Toggle presentation details
+        function togglePresentationDetails(element) {
+            const details = element.querySelector('.presentation-details-full');
+            if (details) {
+                details.style.display = details.style.display === 'block' ? 'none' : 'block';
+            }
+        }
+
+        // Toggle mobile presentation details
+function toggleMobilePresentationDetails(element) {
+    const details = element.querySelector('.presentation-details-full');
+    if (details) {
+        details.style.display = details.style.display === 'block' ? 'none' : 'block';
+    }
+}
+        // Update sorted presentations
+        function updateSortedPresentations() {
+            updateUpcomingPresentations();
+        }
+
+        // Check for presentation conflicts
+        function checkPresentationConflict(presentation) {
+            const presentationTime = new Date(presentation.datetime);
+            
+            for (const ac of aircraft) {
+                if (ac.presentations && ac.presentations.length > 0) {
+                    for (const pres of ac.presentations) {
+                        if (pres.status !== 'completed') {
+                            const otherTime = new Date(pres.datetime);
+                            const timeDiff = Math.abs(presentationTime - otherTime);
+                            const minutesDiff = timeDiff / (1000 * 60);
+                            
+                            // Consider it a conflict if within 2 hours of another presentation
+                            if (minutesDiff < 120 && presentation.msn !== ac.msn) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        // Update mobile layout
+        // Update mobile layout - SIMPLIFIED VERSION
+function updateMobileLayout() {
+    const isMobile = window.innerWidth <= 768;
+    
+    // Show/hide mobile sections
+    const mobileHomeStats = document.getElementById('mobile-home-stats');
+    const mobileAircraftSection = document.getElementById('mobile-aircraft-section');
+    const mobilePresentationsSection = document.getElementById('mobile-presentations-section');
+    
+    if (mobileHomeStats) mobileHomeStats.style.display = isMobile ? 'grid' : 'none';
+    if (mobileAircraftSection) mobileAircraftSection.style.display = isMobile ? 'block' : 'none';
+    if (mobilePresentationsSection) mobilePresentationsSection.style.display = isMobile ? 'block' : 'none';
+    
+    // Show/hide desktop tab system
+    const desktopTabSystem = document.querySelector('.fleet-deliveries-tabs');
+    if (desktopTabSystem) {
+        desktopTabSystem.style.display = isMobile ? 'none' : 'block';
+    }
+    
+    // Show/hide desktop table
+    const desktopAircraftTable = document.getElementById('desktop-aircraft-table');
+    if (desktopAircraftTable) desktopAircraftTable.style.display = isMobile ? 'none' : 'table';
+    
+    // Show/hide presentations dashboard (FIXING THE DUPLICATION)
+    const presentationsDashboard = document.querySelector('.dashboard');
+    if (presentationsDashboard) {
+        presentationsDashboard.style.display = isMobile ? 'none' : 'block';
+    }
+    
+    if (isMobile) {
+        if (typeof renderMobileAircraftList === 'function') renderMobileAircraftList();
+        if (typeof updateMobilePresentations === 'function') updateMobilePresentations();
+    } else {
+        if (typeof updateDeliveriesTab === 'function') updateDeliveriesTab();
+    }
+}
+        // Render mobile aircraft list
+        function renderMobileAircraftList() {
+            const upcomingContainer = document.getElementById('upcoming-deliveries');
+            const fullFleetContainer = document.getElementById('full-fleet');
+            const upcomingCounter = document.getElementById('upcoming-deliveries-counter');
+            const fullFleetCounter = document.getElementById('full-fleet-counter');
+            
+            if (!upcomingContainer || !fullFleetContainer) return;
+            
+            let aircraftToDisplay = getFilteredAircraft();
+            
+            // Sort by delivery date for upcoming deliveries
+            const upcomingAircraft = [...aircraftToDisplay]
+                .sort((a, b) => new Date(a.deliveryDate || '9999-12-31') - new Date(b.deliveryDate || '9999-12-31'))
+                .slice(0, 6);
+            
+            // Sort by MSN for full fleet
+            const fullFleetAircraft = [...aircraftToDisplay]
+                .sort((a, b) => a.msn.localeCompare(b.msn));
+            
+            // Render upcoming deliveries
+            let upcomingHtml = '';
+            upcomingAircraft.forEach((ac, index) => {
+                const actualIndex = aircraft.findIndex(a => a.msn === ac.msn);
+                upcomingHtml += `
+                    <div class="mobile-aircraft-row" onclick="showAircraftDetailMobile(${actualIndex})">
+                        <div class="mobile-msn">${ac.msn}</div>
+                        <div class="mobile-codes">
+                            <div class="mobile-code">
+                                ${getMobileLogoElement(ac.owner).outerHTML}
+                                <span style="font-size: 10px;">${ac.owner}</span>
+                            </div>
+                            <div class="mobile-code">
+                                ${getMobileLogoElement(ac.operator).outerHTML}
+                                <span style="font-size: 10px;">${ac.operator}</span>
+                            </div>
+                        </div>
+                        <div class="mobile-delivery-date">${formatDateToDDMMYYYY(ac.deliveryDate)}</div>
+                    </div>
+                `;
+            });
+            
+            upcomingContainer.innerHTML = upcomingHtml;
+            upcomingCounter.textContent = `Showing ${upcomingAircraft.length} upcoming deliveries`;
+            
+            // Render full fleet
+            let fullFleetHtml = '';
+            fullFleetAircraft.forEach((ac, index) => {
+                const actualIndex = aircraft.findIndex(a => a.msn === ac.msn);
+                fullFleetHtml += `
+                    <div class="mobile-aircraft-row" onclick="showAircraftDetailMobile(${actualIndex})">
+                        <div class="mobile-msn">${ac.msn}</div>
+                        <div class="mobile-codes">
+                            <div class="mobile-code">
+                                ${getMobileLogoElement(ac.owner).outerHTML}
+                                <span style="font-size: 10px;">${ac.owner}</span>
+                            </div>
+                            <div class="mobile-code">
+                                ${getMobileLogoElement(ac.operator).outerHTML}
+                                <span style="font-size: 10px;">${ac.operator}</span>
+                            </div>
+                        </div>
+                        <div class="mobile-delivery-date">${formatDateToDDMMYYYY(ac.deliveryDate)}</div>
+                    </div>
+                `;
+            });
+            
+            fullFleetContainer.innerHTML = fullFleetHtml;
+            fullFleetCounter.textContent = `Total: ${fullFleetAircraft.length} aircraft`;
+        }
+
+        // Show aircraft detail in mobile view
+        function showAircraftDetailMobile(index) {
+            showAircraftDetail(index);
+        }
+
+        // Update mobile stats
+        function updateMobileStats() {
+            const aircraftCount = document.getElementById('mobile-aircraft-count');
+            const presentationsCount = document.getElementById('mobile-presentations-count');
+            const conflictsCount = document.getElementById('mobile-conflicts-count');
+            
+            if (aircraftCount) aircraftCount.textContent = aircraft.length;
+            
+            // Count upcoming presentations
+            let upcomingCount = 0;
+            let conflictCount = 0;
+            
+            aircraft.forEach(ac => {
+                if (ac.presentations && ac.presentations.length > 0) {
+                    ac.presentations.forEach(pres => {
+                        if (pres.status !== 'completed') {
+                            upcomingCount++;
+                            if (checkPresentationConflict({...pres, msn: ac.msn})) {
+                                conflictCount++;
+                            }
+                        }
+                    });
+                }
+            });
+            
+            if (presentationsCount) presentationsCount.textContent = upcomingCount;
+            if (conflictsCount) conflictsCount.textContent = conflictCount;
+        }
+
+        // Toggle archive status
+        function toggleArchive(index) {
+            aircraft[index].status = aircraft[index].status === 'Archived' ? 'FAL' : 'Archived';
+            saveData();
+            updateDashboard();
+            updateMobileLayout();
+        }
+
+        // Show presentation form - FILTER OUT COMPLETED FULL PRESENTATIONS - WITH AUTH CHECK
+        function showPresentationForm(aircraftIndex) {
+            // AUTH CHECK - Block if not logged in
+            if (!authToken) {
+                alert('Please log in to schedule presentations');
+                showLoginForm();
+                return;
+            }
+            
+            document.getElementById('presentation-modal-title').textContent = 'Schedule Presentation';
+            document.getElementById('presentation-form').reset();
+            document.getElementById('presentation-aircraft-index').value = aircraftIndex;
+            document.getElementById('presentation-edit-index').value = '';
+            
+            // Get current aircraft
+            const currentAircraft = aircraft[aircraftIndex];
+            
+                    // Populate presentation type dropdown - FILTER OUT completed "full" presentations
+        const typeSelect = document.getElementById('presentation-type');
+        typeSelect.innerHTML = '<option value="">Select Presentation Type</option>';
+        
+        // SORT presentation types alphabetically
+        const sortedTypes = [...presentationTypes].sort((a, b) => a.name.localeCompare(b.name));
+        
+        sortedTypes.forEach(type => {
+                // Check if this presentation type already exists as "full" for this aircraft
+                const existingFullPresentation = currentAircraft.presentations?.find(p => 
+                    p.type === type.name && p.completion === 'full'
+                );
+                
+                // Only show in dropdown if it's NOT a completed "full" presentation
+                if (!existingFullPresentation) {
+                    const option = document.createElement('option');
+                    option.value = type.name;
+                    option.textContent = `${type.name} (${type.duration} min)`;
+                    typeSelect.appendChild(option);
+                }
+            });
+            
+            // Populate representative dropdown
+            const repSelect = document.getElementById('presentation-representative');
+            repSelect.innerHTML = '<option value="">Select Representative</option>';
+            representatives.forEach(rep => {
+                const option = document.createElement('option');
+                option.value = rep;
+                option.textContent = rep;
+                repSelect.appendChild(option);
+            });
+            
+            // Set default datetime to now
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            document.getElementById('presentation-datetime').value = now.toISOString().slice(0, 16);
+            
+            document.getElementById('presentation-modal').style.display = 'block';
+        }
+
+        // Hide presentation modal
+        function hidePresentationModal() {
+            document.getElementById('presentation-modal').style.display = 'none';
+        }
+
+        // Presentation form submission
+        document.getElementById('presentation-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const aircraftIndex = document.getElementById('presentation-aircraft-index').value;
+            const editIndex = document.getElementById('presentation-edit-index').value;
+            const type = document.getElementById('presentation-type').value;
+            const datetime = document.getElementById('presentation-datetime').value;
+            const completion = document.getElementById('presentation-completion').value;
+            const location = document.getElementById('presentation-location').value.toUpperCase();
+            const representative = document.getElementById('presentation-representative').value;
+            const qubs = parseInt(document.getElementById('presentation-qubs').value) || 0;
+            const remarks = document.getElementById('presentation-remarks').value;
+            
+            const presentationData = {
+                type,
+                datetime,
+                completion,
+                location,
+                representative,
+                qubs,
+                remarks,
+                status: 'scheduled'
+            };
+            
+            // Check for time conflicts
+            const hasConflict = checkPresentationConflict({
+                ...presentationData,
+                msn: aircraft[aircraftIndex].msn
+            });
+            
+            if (editIndex !== '') {
+                // Update existing presentation
+                aircraft[aircraftIndex].presentations[editIndex] = presentationData;
+            } else {
+                // Add new presentation
+                if (!aircraft[aircraftIndex].presentations) {
+                    aircraft[aircraftIndex].presentations = [];
+                }
+                aircraft[aircraftIndex].presentations.push(presentationData);
+            }
+            
+            saveData();
+            updateDashboard();
+            updateMobileLayout();
+            hidePresentationModal();
+            
+            if (hasConflict) {
+                alert('Presentation scheduled with time conflict! Both presentations are marked with conflict warnings.');
+            }
+        });
+
+        // Edit presentation
+        function editPresentation(aircraftIndex, presentationIndex) {
+            const pres = aircraft[aircraftIndex].presentations[presentationIndex];
+            
+            document.getElementById('presentation-modal-title').textContent = 'Edit Presentation';
+            document.getElementById('presentation-aircraft-index').value = aircraftIndex;
+            document.getElementById('presentation-edit-index').value = presentationIndex;
+            
+            // Populate presentation type dropdown
+            const typeSelect = document.getElementById('presentation-type');
+            typeSelect.innerHTML = '<option value="">Select Presentation Type</option>';
+            presentationTypes.forEach(type => {
+                const option = document.createElement('option');
+                option.value = type.name;
+                option.textContent = `${type.name} (${type.duration} min)`;
+                option.selected = type.name === pres.type;
+                typeSelect.appendChild(option);
+            });
+            
+            // Populate representative dropdown
+            const repSelect = document.getElementById('presentation-representative');
+            repSelect.innerHTML = '<option value="">Select Representative</option>';
+            representatives.forEach(rep => {
+                const option = document.createElement('option');
+                option.value = rep;
+                option.textContent = rep;
+                option.selected = rep === pres.representative;
+                repSelect.appendChild(option);
+            });
+            
+            // Set form values
+            document.getElementById('presentation-datetime').value = pres.datetime.slice(0, 16);
+            document.getElementById('presentation-completion').value = pres.completion || 'full';
+            document.getElementById('presentation-location').value = pres.location || '';
+            document.getElementById('presentation-qubs').value = pres.qubs || 0;
+            document.getElementById('presentation-remarks').value = pres.remarks || '';
+            
+            document.getElementById('presentation-modal').style.display = 'block';
+        }
+
+        // Delete presentation
+        function deletePresentation(aircraftIndex, presentationIndex) {
+            if (confirm('Are you sure you want to delete this presentation?')) {
+                aircraft[aircraftIndex].presentations.splice(presentationIndex, 1);
+                saveData();
+                updateDashboard();
+                updateMobileLayout();
+                
+                // If we're in detail view, refresh it
+                if (document.getElementById('detail-view').style.display === 'block') {
+                    showAircraftDetail(aircraftIndex);
+                }
+            }
+        }
+
+        // Complete presentation
+        function completePresentation(aircraftIndex, presentationIndex) {
+            aircraft[aircraftIndex].presentations[presentationIndex].status = 'completed';
+            saveData();
+            updateDashboard();
+            updateMobileLayout();
+            
+            // If we're in detail view, refresh it
+            if (document.getElementById('detail-view').style.display === 'block') {
+                showAircraftDetail(aircraftIndex);
+            }
+        }
+
+        // Toggle master list
+        function toggleMasterList() {
+            const list = document.getElementById('presentation-master-list');
+            if (list.style.display === 'block') {
+                list.style.display = 'none';
+            } else {
+                list.style.display = 'block';
+                updatePresentationMasterList();
+            }
+        }
+
+        // Add presentation type
+        function addPresentationType() {
+            const nameInput = document.getElementById('new-presentation-name');
+            const durationInput = document.getElementById('new-presentation-duration');
+            
+            const name = nameInput.value.trim();
+            const duration = parseInt(durationInput.value);
+            
+            if (!name) {
+                alert('Please enter a presentation name');
+                return;
+            }
+            
+            if (!duration || duration < 15) {
+                alert('Please enter a valid duration (minimum 15 minutes)');
+                return;
+            }
+            
+            // Check for duplicates
+            if (presentationTypes.some(type => type.name.toLowerCase() === name.toLowerCase())) {
+                alert('A presentation type with this name already exists!');
+                return;
+            }
+            
+            const newType = {
+                id: presentationTypes.length > 0 ? Math.max(...presentationTypes.map(t => t.id)) + 1 : 1,
+                name: name,
+                duration: duration
+            };
+            
+            presentationTypes.push(newType);
+            saveData();
+            updatePresentationMasterList();
+            
+            // Clear inputs
+            nameInput.value = '';
+            durationInput.value = '';
+        }
+
+        // Delete presentation type
+        function deletePresentationType(index) {
+            if (confirm('Are you sure you want to delete this presentation type? This will not affect existing presentations.')) {
+                presentationTypes.splice(index, 1);
+                saveData();
+                updatePresentationMasterList();
+            }
+        }
+
+        // Toggle representatives list
+        function toggleRepresentativesList() {
+            const list = document.getElementById('representatives-list');
+            if (list.style.display === 'block') {
+                list.style.display = 'none';
+            } else {
+                list.style.display = 'block';
+                updateRepresentativesList();
+            }
+        }
+
+        // Update representatives list
+        function updateRepresentativesList() {
+            const container = document.getElementById('representatives-container');
+            if (!container) return;
+            
+            let html = '';
+            
+            representatives.forEach((rep, index) => {
+                html += `
+                    <div class="representative-item">
+                        <div class="presentation-details">
+                            <div><strong>${rep}</strong></div>
+                        </div>
+                        <div>
+                            <button class="archive-btn" onclick="deleteRepresentative(${index})">Delete</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        // Add representative
+        function addRepresentative() {
+            const nameInput = document.getElementById('new-representative-name');
+            const name = nameInput.value.trim();
+            
+            if (!name) {
+                alert('Please enter a representative name');
+                return;
+            }
+            
+            // Check for duplicates
+            if (representatives.some(rep => rep.toLowerCase() === name.toLowerCase())) {
+                alert('A representative with this name already exists!');
+                return;
+            }
+            
+            representatives.push(name);
+            saveData();
+            updateRepresentativesList();
+            
+            // Clear input
+            nameInput.value = '';
+        }
+
+        // Delete representative
+        function deleteRepresentative(index) {
+            if (confirm('Are you sure you want to delete this representative?')) {
+                representatives.splice(index, 1);
+                saveData();
+                updateRepresentativesList();
+            }
+        }
+
+        // Export data
+        function exportData() {
+            const data = {
+                aircraft: aircraft,
+                presentationTypes: presentationTypes,
+                representatives: representatives,
+                exportDate: new Date().toISOString()
+            };
+            
+            const dataStr = JSON.stringify(data, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = `aione-backup-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+        }
+
+        // Import data
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    
+                    if (confirm('This will replace all current data. Are you sure?')) {
+                        if (importedData.aircraft) aircraft = importedData.aircraft;
+                        if (importedData.presentationTypes) presentationTypes = importedData.presentationTypes;
+                        if (importedData.representatives) representatives = importedData.representatives;
+                        
+                        saveData();
+                        updateDashboard();
+                        updateMobileLayout();
+                        alert('Data imported successfully!');
+                    }
+                } catch (error) {
+                    alert('Error importing data: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+            
+            // Reset file input
+            event.target.value = '';
+        }
+
+        // Clear all data
+        function clearAllData() {
+            if (confirm('This will permanently delete all aircraft, presentations, and settings. Are you sure?')) {
+                if (confirm('This cannot be undone! Type "DELETE" to confirm:')) {
+                    aircraft = [];
+                    presentationTypes = defaultPresentationTypes;
+                    representatives = ["John Smith", "Maria Garcia", "David Chen"];
+                    
+                    saveData();
+                    updateDashboard();
+                    updateMobileLayout();
+                    alert('All data has been cleared.');
+                }
+            }
+        }
+
+        // Load local data (fallback)
+        function loadLocalData() {
+            // Data is already loaded at the top
+            updateDashboard();
+            updateMobileLayout();
+        }
+
+        // Initialize the app - FIXED: Safe initialization
+        function initApp() {
+            // Initialize auth
+            const savedUser = localStorage.getItem('aione_user');
+            if (savedUser && authToken) {
+                currentUser = JSON.parse(savedUser);
+            }
+            updateAuthUI();
+
+            try {
+                // Ensure all aircraft have presentations array
+                aircraft.forEach(ac => {
+                    if (!ac.presentations || !Array.isArray(ac.presentations)) {
+                        ac.presentations = [];
+                    }
+                });
+                
+                updateFilterOptions();
+                updateMobileLayout();
+                updateDashboard();
+                updatePresentationMasterList();
+                updateMobileStats();
+                updateDeliveriesTab(); // Initialize the deliveries tab
+                
+                window.addEventListener('resize', updateMobileLayout);
+                
+                console.log('AIOne Aircraft Tracker initialized successfully');
+            } catch (error) {
+                console.error('Initialization error:', error);
+                alert('Error initializing application: ' + error.message);
+            }
+        }
+
+        window.onload = initApp;
+    </script>
+</body>
+</html>

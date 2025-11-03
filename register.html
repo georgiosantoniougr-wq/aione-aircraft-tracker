@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register - AIOne Aircraft Tracker</title>
+    <style>
+        body { font-family: Arial; max-width: 400px; margin: 50px auto; padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; }
+        input, select, button { width: 100%; padding: 8px; margin-bottom: 10px; }
+        button { background: #007bff; color: white; border: none; padding: 10px; cursor: pointer; }
+        .message { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h2>🚀 Create Your Account</h2>
+    
+    <div class="form-group">
+        <label>Username:</label>
+        <input type="text" id="username" placeholder="Choose a username">
+    </div>
+    
+    <div class="form-group">
+        <label>Email:</label>
+        <input type="email" id="email" placeholder="your@email.com">
+    </div>
+    
+    <div class="form-group">
+        <label>Password:</label>
+        <input type="password" id="password" placeholder="Enter a password">
+    </div>
+    
+    <div class="form-group">
+        <label>Role:</label>
+        <select id="role">
+            <option value="admin">Administrator</option>
+            <option value="manager">Manager</option>
+            <option value="viewer">Viewer</option>
+        </select>
+    </div>
+    
+    <button id="registerButton">Create Account</button>
+    
+    <div id="message"></div>
+
+    <script>
+        // SIMPLIFIED VERSION - NO COMPLEX STRINGS
+        document.getElementById('registerButton').addEventListener('click', async function() {
+            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const role = document.getElementById('role').value;
+            
+            const messageDiv = document.getElementById('message');
+            messageDiv.innerHTML = 'Creating account...';
+
+            try {
+                const response = await fetch('http://localhost:5000/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, email, password, role })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    messageDiv.className = 'message success';
+                    messageDiv.innerHTML = 'Account Created Successfully! Token: ' + data.token;
+                } else {
+                    messageDiv.className = 'message error';
+                    messageDiv.innerHTML = 'Error: ' + data.error;
+                }
+            } catch (error) {
+                messageDiv.className = 'message error';
+                messageDiv.innerHTML = 'Connection failed: ' + error.message;
+            }
+        });
+    </script>
+</body>
+</html>
