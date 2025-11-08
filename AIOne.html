@@ -1288,6 +1288,14 @@
         const API_BASE = 'https://aione-aircraft-tracker-1.onrender.com/api';
         let authToken = localStorage.getItem('aione_token');
         let currentUser = null;
+        // ==================== ROLE PERMISSIONS ====================
+function canEdit() {
+    return currentUser && (currentUser.role === 'admin' || currentUser.role === 'manager');
+}
+
+function canDelete() {
+    return currentUser && currentUser.role === 'admin';
+}
 
         // NEW: Presentations expansion state
         let presentationsExpanded = false;
@@ -1365,6 +1373,23 @@ async function login() {
                 if (loginBtn) loginBtn.style.display = 'block';
                 if (logoutBtn) logoutBtn.style.display = 'none';
             }
+                } else {
+        if (authStatus) authStatus.textContent = 'Not logged in';
+        if (authUser) authUser.textContent = '';
+        if (loginBtn) loginBtn.style.display = 'block';
+        if (logoutBtn) logoutBtn.style.display = 'none';
+    }
+    
+    // ↓↓↓ ADD THIS CODE RIGHT HERE ↓↓↓
+    // Hide/show buttons based on role
+    const addButton = document.querySelector('.add-btn');
+    if (addButton) {
+        addButton.style.display = canEdit() ? 'block' : 'none';
+    }
+    // ↑↑↑ ADD THIS CODE RIGHT HERE ↑↑↑
+    
+}
+// ← This is the function closing brace - your code goes ABOVE this line
         }
 
         // Backend data loading
@@ -1623,34 +1648,36 @@ async function login() {
                 const actualIndex = aircraft.findIndex(a => a.msn === ac.msn);
                 const isArchived = ac.status === 'Archived';
                 
-                html += `
-                    <tr class="${isArchived ? 'archived-row' : ''}">
-                        <td class="msn-cell">${ac.msn}</td>
-                        <td>
-                            <div class="logo-cell">
-                                ${getLogoElement(ac.owner).outerHTML}
-                                <div>${ac.owner} - ${airlineData[ac.owner]?.name || 'Unknown'}</div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="logo-cell">
-                                ${getLogoElement(ac.operator).outerHTML}
-                                <div>${ac.operator} - ${airlineData[ac.operator]?.name || 'Unknown'}</div>
-                            </div>
-                        </td>
-                        <td>${formatDateToDDMMYYYY(ac.deliveryDate)}</td>
-                        <td>${ac.status}</td>
-                        <td>
-                            <button class="edit-btn" onclick="showAircraftDetail(${actualIndex})">View</button>
-                            <button class="edit-btn" onclick="showEditForm(${actualIndex})">Edit</button>
-                            ${isArchived ? 
-                                `<button class="unarchive-btn" onclick="toggleArchive(${actualIndex})">Unarchive</button>` : 
-                                `<button class="archive-btn" onclick="toggleArchive(${actualIndex})">Archive</button>`
-                            }
-                            <button onclick="showPresentationForm(${actualIndex})">Add Presentation</button>
-                        </td>
-                    </tr>
-                `;
+               html += `
+    <tr class="${isArchived ? 'archived-row' : ''}">
+        <td class="msn-cell">${ac.msn}</td>
+        <td>
+            <div class="logo-cell">
+                ${getLogoElement(ac.owner).outerHTML}
+                <div>${ac.owner} - ${airlineData[ac.owner]?.name || 'Unknown'}</div>
+            </div>
+        </td>
+        <td>
+            <div class="logo-cell">
+                ${getLogoElement(ac.operator).outerHTML}
+                <div>${ac.operator} - ${airlineData[ac.operator]?.name || 'Unknown'}</div>
+            </div>
+        </td>
+        <td>${formatDateToDDMMYYYY(ac.deliveryDate)}</td>
+        <td>${ac.status}</td>
+        <td>
+            <button class="edit-btn" onclick="showAircraftDetail(${actualIndex})">View</button>
+            ${canEdit() ? `
+                <button class="edit-btn" onclick="showEditForm(${actualIndex})">Edit</button>
+                ${isArchived ? 
+                    `<button class="unarchive-btn" onclick="toggleArchive(${actualIndex})">Unarchive</button>` : 
+                    `<button class="archive-btn" onclick="toggleArchive(${actualIndex})">Archive</button>`
+                }
+                <button onclick="showPresentationForm(${actualIndex})">Add Presentation</button>
+            ` : ''}
+        </td>
+    </tr>
+`;
             });
             
             tbody.innerHTML = html;
@@ -1934,14 +1961,16 @@ async function login() {
                     </div>
                 </div>
                 
-                <div style="margin: 20px 0; text-align: center;">
-                    <button class="edit-btn" onclick="showEditForm(${index})">Edit Aircraft</button>
-                    <button onclick="showPresentationForm(${index})">Add Presentation</button>
-                    ${ac.status === 'Archived' ? 
-                        `<button class="unarchive-btn" onclick="toggleArchive(${index})">Unarchive</button>` : 
-                        `<button class="archive-btn" onclick="toggleArchive(${index})">Archive</button>`
-                    }
-                </div>
+               <div style="margin: 20px 0; text-align: center;">
+    ${canEdit() ? `
+        <button class="edit-btn" onclick="showEditForm(${index})">Edit Aircraft</button>
+        <button onclick="showPresentationForm(${index})">Add Presentation</button>
+        ${ac.status === 'Archived' ? 
+            `<button class="unarchive-btn" onclick="toggleArchive(${index})">Unarchive</button>` : 
+            `<button class="archive-btn" onclick="toggleArchive(${index})">Archive</button>`
+        }
+    ` : ''}
+</div>
             `;
             
             // Add presentations if any
@@ -2953,5 +2982,6 @@ function updateMobileLayout() {
 </body>
 
 </html>
+
 
 
