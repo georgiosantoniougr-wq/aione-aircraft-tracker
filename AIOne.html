@@ -1356,41 +1356,30 @@ async function login() {
             if (loginForm) loginForm.style.display = 'none';
         }
 
-        function updateAuthUI() {
-            const authStatus = document.getElementById('auth-status');
-            const authUser = document.getElementById('auth-user');
-            const loginBtn = document.getElementById('login-btn');
-            const logoutBtn = document.getElementById('logout-btn');
+    function updateAuthUI() {
+    const authStatus = document.getElementById('auth-status');
+    const authUser = document.getElementById('auth-user');
+    const loginBtn = document.getElementById('login-btn');
+    const logoutBtn = document.getElementById('logout-btn');
 
-            if (authToken && currentUser) {
-                if (authStatus) authStatus.textContent = 'Logged in:';
-                if (authUser) authUser.textContent = `${currentUser.username} (${currentUser.role})`;
-                if (loginBtn) loginBtn.style.display = 'none';
-                if (logoutBtn) logoutBtn.style.display = 'block';
-            } else {
-                if (authStatus) authStatus.textContent = 'Not logged in';
-                if (authUser) authUser.textContent = '';
-                if (loginBtn) loginBtn.style.display = 'block';
-                if (logoutBtn) logoutBtn.style.display = 'none';
-            }
-                } else {
+    if (authToken && currentUser) {
+        if (authStatus) authStatus.textContent = 'Logged in:';
+        if (authUser) authUser.textContent = `${currentUser.username} (${currentUser.role})`;
+        if (loginBtn) loginBtn.style.display = 'none';
+        if (logoutBtn) logoutBtn.style.display = 'block';
+    } else {
         if (authStatus) authStatus.textContent = 'Not logged in';
         if (authUser) authUser.textContent = '';
         if (loginBtn) loginBtn.style.display = 'block';
         if (logoutBtn) logoutBtn.style.display = 'none';
     }
     
-    // ↓↓↓ ADD THIS CODE RIGHT HERE ↓↓↓
     // Hide/show buttons based on role
     const addButton = document.querySelector('.add-btn');
     if (addButton) {
         addButton.style.display = canEdit() ? 'block' : 'none';
     }
-    // ↑↑↑ ADD THIS CODE RIGHT HERE ↑↑↑
-    
 }
-// ← This is the function closing brace - your code goes ABOVE this line
-        }
 
         // Backend data loading
         async function loadAircraftFromBackend() {
@@ -1649,7 +1638,7 @@ async function login() {
                 const isArchived = ac.status === 'Archived';
                 
                html += `
-    <tr class="${isArchived ? 'archived-row' : ''}">
+          <tr class="${isArchived ? 'archived-row' : ''}">
         <td class="msn-cell">${ac.msn}</td>
         <td>
             <div class="logo-cell">
@@ -1961,7 +1950,7 @@ async function login() {
                     </div>
                 </div>
                 
-               <div style="margin: 20px 0; text-align: center;">
+                 <div style="margin: 20px 0; text-align: center;">
     ${canEdit() ? `
         <button class="edit-btn" onclick="showEditForm(${index})">Edit Aircraft</button>
         <button onclick="showPresentationForm(${index})">Add Presentation</button>
@@ -2982,6 +2971,7 @@ function updateMobileLayout() {
 </body>
 
 </html>
+
 
 
 
