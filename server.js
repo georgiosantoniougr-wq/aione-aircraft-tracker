@@ -77,7 +77,7 @@ app.post('/api/auth/register', async (req, res) => {
     // Insert user
     const { data, error } = await supabase
       .from('users')
-      .insert([{ username, email, password_hash, role }])
+      .insert([{ username, email, password: password_hash, role }])
       .select();
 
     if (error) {
@@ -339,3 +339,4 @@ app.listen(PORT, async () => {
 }).on('error', (err) => {
   console.error('❌ Server failed to start:', err);
 });
+
