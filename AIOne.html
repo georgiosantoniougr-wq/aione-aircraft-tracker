@@ -1418,7 +1418,7 @@ async function login() {
             'QTR': { name: 'Qatar Airways', logo: 'https://logo.clearbit.com/qatarairways.com' },
             'THA': { name: 'Thai Airways', logo: 'https://logo.clearbit.com/thaiairways.com' },
             'CHH': { name: 'Hainan Airlines', logo: 'https://logo.clearbit.com/hnair.com' },
-            'SPQ': { name: 'Sun PhuQuoc Airways', logo: 'https://via.placeholder.com/80x40?text=SPQ' },
+            'SPQ': { name: 'Sun PhuQuoc Airways', logo: '' }, // No logo - will use placeholder
             'AHY': { name: 'Azerbaijan Airlines', logo: 'https://logo.clearbit.com/azal.az' },
             'UAL': { name: 'United Airlines', logo: 'https://logo.clearbit.com/united.com' },
             'DAL': { name: 'Delta Air Lines', logo: 'https://logo.clearbit.com/delta.com' },
@@ -2019,9 +2019,11 @@ async function login() {
                 img.src = airline.logo;
                 img.alt = code;
                 img.className = 'airline-logo';
-                img.onerror = function() {
-                    this.parentNode.innerHTML = `<div class="logo-placeholder">${code}</div>`;
-                };
+               img.onerror = function() {
+    if (this.parentNode) {
+        this.parentNode.innerHTML = `<div class="logo-placeholder">${code}</div>`;
+    }
+};
                 return img;
             } else {
                 const div = document.createElement('div');
@@ -2993,6 +2995,7 @@ function updateMobileLayout() {
 </body>
 
 </html>
+
 
 
 
