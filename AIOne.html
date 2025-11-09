@@ -1347,10 +1347,17 @@ function canDelete() {
             loadLocalData();
         }
 
-        // Show login form
+                // Show login form
         function showLoginForm() {
+            console.log('showLoginForm function called!');
             const loginForm = document.getElementById('login-form');
-            if (loginForm) loginForm.style.display = 'block';
+            console.log('Login form element:', loginForm);
+            if (loginForm) {
+                console.log('Setting login form to display: block');
+                loginForm.style.display = 'block';
+            } else {
+                console.log('ERROR: login-form element not found!');
+            }
         }
 
         // Hide login form  
@@ -3225,6 +3232,7 @@ function updateMobileLayout() {
 </body>
 
 </html>
+
 
 
 
