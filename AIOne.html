@@ -1301,80 +1301,59 @@ function canDelete() {
         let presentationsExpanded = false;
         let mobilePresentationsExpanded = false;
 
-        // Simple auth functions
-                // Show login form
+                // Simple auth functions
+        async function login() {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            if (!email || !password) {
+                alert('Please enter both email and password');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    authToken = data.token;
+                    currentUser = data.user;
+                    localStorage.setItem('aione_token', authToken);
+                    localStorage.setItem('aione_user', JSON.stringify(currentUser));
+                    updateAuthUI();
+                    hideLoginForm();
+                    loadAircraftFromBackend();
+                } else {
+                    alert('Login failed: ' + data.error);
+                }
+            } catch (error) {
+                alert('Login error: ' + error.message);
+            }
+        }
+
+        function logout() {
+            authToken = null;
+            currentUser = null;
+            localStorage.removeItem('aione_token');
+            localStorage.removeItem('aione_user');
+            updateAuthUI();
+            loadLocalData();
+        }
+
+        // Show login form
         function showLoginForm() {
             const loginForm = document.getElementById('login-form');
             if (loginForm) loginForm.style.display = 'block';
         }
 
         // Hide login form  
-        function hideLoginForm() {
-            const loginForm = document.getElementById('login-form');
-            if (loginForm) loginForm.style.display = 'none';
-        }
-async function login() {
-    const email = document.getElementById('login-email').value;
-    const password = document.getElementById('login-password').value;
-
-    if (!email || !password) {
-        alert('Please enter both email and password');
-        return;
-    }
-
-    try {
-        const response = await fetch(`${API_BASE}/auth/login`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ email, password })
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-            authToken = data.token;
-            currentUser = data.user;
-            localStorage.setItem('aione_token', authToken);
-            localStorage.setItem('aione_user', JSON.stringify(currentUser));
-            updateAuthUI();
-            hideLoginForm();
-            loadAircraftFromBackend();
-        } else {
-            alert('Login failed: ' + data.error);
-        }
-    } catch (error) {
-        alert('Login error: ' + error.message);
-    }
-}
-     function logout() {
-    authToken = null;
-    currentUser = null;
-    localStorage.removeItem('aione_token');
-    localStorage.removeItem('aione_user');
-    updateAuthUI();
-    loadLocalData();
-}
-
-// Show login form
-function showLoginForm() {
-    const loginForm = document.getElementById('login-form');
-    if (loginForm) loginForm.style.display = 'block';
-}
-
-// Hide login form  
-function hideLoginForm() {
-    const loginForm = document.getElementById('login-form');
-    if (loginForm) loginForm.style.display = 'none';
-}
-        }
-
-        function showLoginForm() {
-            const loginForm = document.getElementById('login-form');
-            if (loginForm) loginForm.style.display = 'block';
-        }
-
         function hideLoginForm() {
             const loginForm = document.getElementById('login-form');
             if (loginForm) loginForm.style.display = 'none';
@@ -3246,6 +3225,7 @@ function updateMobileLayout() {
 </body>
 
 </html>
+
 
 
 
