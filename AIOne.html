@@ -1705,19 +1705,17 @@ async function login() {
         }
 
         // Show aircraft add form - WITH AUTH CHECK
-        function showAddForm() {
-            // AUTH CHECK - Block if not logged in
-            if (!authToken) {
-                alert('Please log in to add aircraft');
-                showLoginForm();
-                return;
-            }
-            
-            document.getElementById('modal-title').textContent = 'Add New Aircraft';
-            document.getElementById('aircraft-form').reset();
-            document.getElementById('edit-index').value = '';
-            document.getElementById('aircraft-modal').style.display = 'block';
-        }
+       function showAddForm() {
+    if (!authToken) {
+        alert('Please log in to add aircraft');
+        showLoginForm();
+        return;
+    }
+    document.getElementById('modal-title').textContent = 'Add New Aircraft';
+    document.getElementById('aircraft-form').reset();
+    document.getElementById('edit-index').value = '';
+    document.getElementById('aircraft-modal').style.display = 'block';
+}
 
         // Show aircraft edit form - WITH AUTH CHECK
         function showEditForm(index) {
@@ -3006,6 +3004,7 @@ function updateMobileLayout() {
 </body>
 
 </html>
+
 
 
 
