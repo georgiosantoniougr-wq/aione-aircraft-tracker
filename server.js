@@ -177,7 +177,6 @@ app.post('/api/auth/login', async (req, res) => {
 // Get all aircraft for authenticated user
 app.get('/api/aircraft', async (req, res) => {
   // Temporary: Add a mock user for testing
-  req.user = { user_id: '00000000-0000-0000-0000-000000000000' };
   try {
     const { data, error } = await supabase
       .from('aircraft')
@@ -489,3 +488,4 @@ app.listen(PORT, async () => {
 }).on('error', (err) => {
   console.error('❌ Server failed to start:', err);
 });
+
