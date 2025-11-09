@@ -1386,9 +1386,11 @@ async function login() {
                     throw new Error('Failed to load from backend');
                 }
             } catch (error) {
-                console.log('Using local data instead');
-                loadLocalData();
-            }
+    console.log('Backend load failed:', error);
+    aircraft = [];
+    updateDashboard();
+    updateMobileLayout();
+}
         }
 
         // ==================== YOUR ORIGINAL JAVASCRIPT ====================
@@ -2953,4 +2955,5 @@ function updateMobileLayout() {
 </body>
 
 </html>
+
 
