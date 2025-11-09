@@ -1838,18 +1838,69 @@ async function login() {
                 presentations: editIndex !== '' ? aircraft[editIndex].presentations : []
             };
             
-            if (editIndex !== '') {
-                // Update existing aircraft
-                aircraft[editIndex] = aircraftData;
-            } else {
-                // Add new aircraft
-                aircraft.push(aircraftData);
-            }
-            
-            saveData();
-            updateDashboard();
-            updateMobileLayout();
-            hideModal();
+            try {
+    // Save to backend
+    const response = await fetch(`${API_BASE}/aircraft`, {
+        method: editIndex !== '' ? 'PUT' : 'POST',
+        headers: {
+            'Authorization': `Bearer ${authToken}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(aircraftData)
+    });
+
+    if (!response.ok) throw new Error('Backend save failed');
+
+    // Reload from backend to ensure sync
+    await loadAircraftFromBackend();
+    hideModal();
+} catch (error) {
+    console.error('Save failed:', error);
+    alert('Failed to save to cloud. Using local storage instead.');
+    // Fallback to local storage
+   try {
+    // If editing, we need the aircraft ID - for now we'll handle add only
+    if (editIndex !== '') {
+        // For edit, fallback to localStorage for now
+        aircraft[editIndex] = aircraftData;
+        saveData();
+        updateDashboard();
+        updateMobileLayout();
+        hideModal();
+    } else {
+        // ADD NEW AIRCRAFT - Save to backend
+        const response = await fetch(`${API_BASE}/aircraft`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(aircraftData)
+        });
+
+        if (!response.ok) throw new Error('Backend save failed');
+
+        const result = await response.json();
+        console.log('Aircraft saved to cloud:', result);
+        
+        // Reload from backend to ensure sync
+        await loadAircraftFromBackend();
+        hideModal();
+    }
+} catch (error) {
+    console.error('Save failed:', error);
+    alert('Failed to save to cloud. Using local storage instead.');
+    // Fallback to local storage
+    if (editIndex !== '') {
+        aircraft[editIndex] = aircraftData;
+    } else {
+        aircraft.push(aircraftData);
+    }
+    saveData();
+    updateDashboard();
+    updateMobileLayout();
+    hideModal();
+}
         });
 
         // Show aircraft details
@@ -2955,5 +3006,6 @@ function updateMobileLayout() {
 </body>
 
 </html>
+
 
 
