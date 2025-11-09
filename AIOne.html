@@ -3423,10 +3423,7 @@ function initApp() {
   }
   updateAuthUI();
   
-  // ADD THIS LINE - Force backend sync when logged in
-  if (authToken) loadAircraftFromBackend(); else loadLocalData();
-
-            try {
+             try {
                 // Ensure all aircraft have presentations array
                 aircraft.forEach(ac => {
                     if (!ac.presentations || !Array.isArray(ac.presentations)) {
@@ -3457,6 +3454,7 @@ function initApp() {
     </script>
 </body>
 </html>
+
 
 
 
