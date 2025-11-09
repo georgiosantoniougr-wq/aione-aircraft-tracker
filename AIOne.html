@@ -1337,13 +1337,26 @@ async function login() {
         alert('Login error: ' + error.message);
     }
 }
-        function logout() {
-            authToken = null;
-            currentUser = null;
-            localStorage.removeItem('aione_token');
-            localStorage.removeItem('aione_user');
-            updateAuthUI();
-            loadLocalData();
+     function logout() {
+    authToken = null;
+    currentUser = null;
+    localStorage.removeItem('aione_token');
+    localStorage.removeItem('aione_user');
+    updateAuthUI();
+    loadLocalData();
+}
+
+// Show login form
+function showLoginForm() {
+    const loginForm = document.getElementById('login-form');
+    if (loginForm) loginForm.style.display = 'block';
+}
+
+// Hide login form  
+function hideLoginForm() {
+    const loginForm = document.getElementById('login-form');
+    if (loginForm) loginForm.style.display = 'none';
+}
         }
 
         function showLoginForm() {
@@ -3105,6 +3118,7 @@ async function addRepresentative() {
 </body>
 
 </html>
+
 
 
 
