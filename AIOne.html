@@ -1380,33 +1380,53 @@ async function login() {
         addButton.style.display = canEdit() ? 'block' : 'none';
     }
 }
+// Load presentation types from backend
+async function loadPresentationTypes() {
+  // ... the function code I provided earlier
+}
 
-        // Backend data loading
-        async function loadAircraftFromBackend() {
-    try {
-        const response = await fetch(`${API_BASE}/aircraft`, {
-            headers: {
-                'Authorization': `Bearer ${authToken}`,
-                'Content-Type': 'application/json'
-            }
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            aircraft = data.data || [];
-            updateDashboard();
-            updateMobileLayout();
-        } else {
-            throw new Error('Failed to load from backend');
-        }
-    } catch (error) {
-        console.log('Backend load failed:', error);
-        // DON'T fall back to localStorage - show error instead
-        alert('Cannot load data from server. Please check your connection.');
-        aircraft = []; // Start with empty array instead of local data
-        updateDashboard();
-        updateMobileLayout();
+// Load representatives from backend  
+async function loadRepresentatives() {
+  // ... the function code I provided earlier
+}
+
+// Backend data loading  <--- THIS LINE SHOULD COME AFTER THE 2 NEW FUNCTIONS
+async function loadAircraftFromBackend() {
+  // ... the existing function
+}
+       // Backend data loading
+async function loadAircraftFromBackend() {
+  try {
+    const response = await fetch(`${API_BASE}/aircraft`, {
+      headers: {
+        'Authorization': `Bearer ${authToken}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      aircraft = data.data || [];
+      
+      // ALSO load presentations and representatives
+      await loadPresentationTypes();
+      await loadRepresentatives();
+      
+      updateDashboard();
+      updateMobileLayout();
+    } else {
+      throw new Error('Failed to load from backend');
     }
+  } catch (error) {
+    console.log('Backend load failed:', error);
+    // Load from localStorage as fallback
+    aircraft = JSON.parse(localStorage.getItem('aione_aircraft')) || [];
+    presentationTypes = JSON.parse(localStorage.getItem('aione_presentation_types')) || defaultPresentationTypes;
+    representatives = JSON.parse(localStorage.getItem('aione_representatives')) || ["John Smith", "Maria Garcia", "David Chen"];
+    
+    updateDashboard();
+    updateMobileLayout();
+  }
 }
 
         // ==================== YOUR ORIGINAL JAVASCRIPT ====================
@@ -1508,9 +1528,8 @@ async function login() {
             { id: 5, name: "First Flight Readiness", duration: 60 }
         ];
 
-        let presentationTypes = JSON.parse(localStorage.getItem('aione_presentation_types')) || defaultPresentationTypes;
-        let representatives = JSON.parse(localStorage.getItem('aione_representatives')) || ["John Smith", "Maria Garcia", "David Chen"];
-
+        let presentationTypes = [];
+let representatives = [];
         // ==================== MISSING FUNCTIONS TO FIX INITIALIZATION ERROR ====================
 
         // Update filter dropdown options
@@ -2771,8 +2790,75 @@ function updateMobileLayout() {
             }
         }
 
-        // Add presentation type
-        function addPresentationType() {
+        // Add presentation type - WITH BACKEND SYNC
+async function addPresentationType() {
+  const nameInput = document.getElementById('new-presentation-name');
+  const durationInput = document.getElementById('new-presentation-duration');
+  
+  const name = nameInput.value.trim();
+  const duration = parseInt(durationInput.value);
+  
+  if (!name) {
+    alert('Please enter a presentation name');
+    return;
+  }
+  
+  if (!duration || duration < 15) {
+    alert('Please enter a valid duration (minimum 15 minutes)');
+    return;
+  }
+  
+  // If not logged in, use localStorage
+  if (!authToken) {
+    // Check for duplicates
+    if (presentationTypes.some(type => type.name.toLowerCase() === name.toLowerCase())) {
+      alert('A presentation type with this name already exists!');
+      return;
+    }
+    
+    const newType = {
+      id: presentationTypes.length > 0 ? Math.max(...presentationTypes.map(t => t.id)) + 1 : 1,
+      name: name,
+      duration: duration
+    };
+    
+    presentationTypes.push(newType);
+    localStorage.setItem('aione_presentation_types', JSON.stringify(presentationTypes));
+    updatePresentationMasterList();
+    
+    // Clear inputs
+    nameInput.value = '';
+    durationInput.value = '';
+    return;
+  }
+  
+  // If logged in, use backend
+  try {
+    const response = await fetch(`${API_BASE}/presentation-types`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${authToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ name, duration })
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      presentationTypes.push(data.data);
+      updatePresentationMasterList();
+      
+      // Clear inputs
+      nameInput.value = '';
+      durationInput.value = '';
+    } else {
+      const errorData = await response.json();
+      alert('Error: ' + errorData.error);
+    }
+  } catch (error) {
+    alert('Failed to add presentation type: ' + error.message);
+  }
+}
             const nameInput = document.getElementById('new-presentation-name');
             const durationInput = document.getElementById('new-presentation-duration');
             
@@ -2853,8 +2939,59 @@ function updateMobileLayout() {
             container.innerHTML = html;
         }
 
-        // Add representative
-        function addRepresentative() {
+        // Add representative - WITH BACKEND SYNC
+async function addRepresentative() {
+  const nameInput = document.getElementById('new-representative-name');
+  const name = nameInput.value.trim();
+  
+  if (!name) {
+    alert('Please enter a representative name');
+    return;
+  }
+  
+  // If not logged in, use localStorage
+  if (!authToken) {
+    // Check for duplicates
+    if (representatives.some(rep => rep.toLowerCase() === name.toLowerCase())) {
+      alert('A representative with this name already exists!');
+      return;
+    }
+    
+    representatives.push(name);
+    localStorage.setItem('aione_representatives', JSON.stringify(representatives));
+    updateRepresentativesList();
+    
+    // Clear input
+    nameInput.value = '';
+    return;
+  }
+  
+  // If logged in, use backend
+  try {
+    const response = await fetch(`${API_BASE}/representatives`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${authToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ name })
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      representatives.push(data.data.name);
+      updateRepresentativesList();
+      
+      // Clear input
+      nameInput.value = '';
+    } else {
+      const errorData = await response.json();
+      alert('Error: ' + errorData.error);
+    }
+  } catch (error) {
+    alert('Failed to add representative: ' + error.message);
+  }
+}
             const nameInput = document.getElementById('new-representative-name');
             const name = nameInput.value.trim();
             
@@ -2968,6 +3105,7 @@ function updateMobileLayout() {
 </body>
 
 </html>
+
 
 
 
