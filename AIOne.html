@@ -1087,6 +1087,9 @@
                     <button class="clear-data-btn" onclick="clearAllData()">Clear All Data</button>
                 </div>
                 <div class="filter-group">
+    <button class="import-btn" onclick="pushLocalDataToBackend()" style="background: #e67e22;">Sync Local Data to Cloud</button>
+</div>
+                <div class="filter-group">
                     <button class="master-list-toggle" onclick="toggleMasterList()">Presentations List</button>
                 </div>
                 <div class="filter-group">
@@ -3043,33 +3046,249 @@
             link.click();
         }
 
-        // Import data
-        function importData(event) {
-            const file = event.target.files[0];
-            if (!file) return;
+        // Import data - FIXED VERSION: Now syncs all data to backend
+async function importData(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = async function(e) {
+        try {
+            const data = JSON.parse(e.target.result);
             
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    
-                    if (data.aircraft) aircraft = data.aircraft;
-                    if (data.presentationTypes) presentationTypes = data.presentationTypes;
-                    if (data.representatives) representatives = data.representatives;
-                    
-                    saveData();
-                    updateDashboard();
-                    updateMobileLayout();
-                    alert('Data imported successfully!');
-                    
-                    // Reset file input
-                    event.target.value = '';
-                } catch (error) {
-                    alert('Error importing data: ' + error.message);
+            // Show loading message
+            alert('Starting import process... This may take a moment.');
+            
+            // If user is logged in, sync everything to backend
+            if (authToken) {
+                // 1. Import aircraft to backend
+                if (data.aircraft) {
+                    for (const ac of data.aircraft) {
+                        try {
+                            await fetch(`${API_BASE}/aircraft`, {
+                                method: 'POST',
+                                headers: {
+                                    'Authorization': `Bearer ${authToken}`,
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify(ac)
+                            });
+                        } catch (error) {
+                            console.log('Error importing aircraft:', error);
+                        }
+                    }
                 }
-            };
-            reader.readAsText(file);
+                
+                // 2. Clear existing presentation types and import new ones
+                if (data.presentationTypes) {
+                    // First, get existing presentation types to delete them
+                    const existingTypesResponse = await fetch(`${API_BASE}/presentation-types`, {
+                        headers: {
+                            'Authorization': `Bearer ${authToken}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (existingTypesResponse.ok) {
+                        const existingTypes = await existingTypesResponse.json();
+                        // Delete existing types
+                        for (const type of existingTypes.data || []) {
+                            await fetch(`${API_BASE}/presentation-types/${type.id}`, {
+                                method: 'DELETE',
+                                headers: {
+                                    'Authorization': `Bearer ${authToken}`,
+                                    'Content-Type': 'application/json'
+                                }
+                            });
+                        }
+                    }
+                    
+                    // Now add the imported types
+                    for (const type of data.presentationTypes) {
+                        try {
+                            await fetch(`${API_BASE}/presentation-types`, {
+                                method: 'POST',
+                                headers: {
+                                    'Authorization': `Bearer ${authToken}`,
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    name: type.name,
+                                    duration: type.duration
+                                })
+                            });
+                        } catch (error) {
+                            console.log('Error importing presentation type:', error);
+                        }
+                    }
+                }
+                
+                // 3. Clear existing representatives and import new ones
+                if (data.representatives) {
+                    // First, get existing representatives to delete them
+                    const existingRepsResponse = await fetch(`${API_BASE}/representatives`, {
+                        headers: {
+                            'Authorization': `Bearer ${authToken}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (existingRepsResponse.ok) {
+                        const existingReps = await existingRepsResponse.json();
+                        // Delete existing representatives
+                        for (const rep of existingReps.data || []) {
+                            await fetch(`${API_BASE}/representatives/${rep.id}`, {
+                                method: 'DELETE',
+                                headers: {
+                                    'Authorization': `Bearer ${authToken}`,
+                                    'Content-Type': 'application/json'
+                                }
+                            });
+                        }
+                    }
+                    
+                    // Now add the imported representatives
+                    for (const repName of data.representatives) {
+                        try {
+                            await fetch(`${API_BASE}/representatives`, {
+                                method: 'POST',
+                                headers: {
+                                    'Authorization': `Bearer ${authToken}`,
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    name: repName
+                                })
+                            });
+                        } catch (error) {
+                            console.log('Error importing representative:', error);
+                        }
+                    }
+                }
+                
+                // Reload all data from backend to ensure sync
+                await loadAircraftFromBackend();
+                alert('Import completed successfully! All data has been synced to the cloud.');
+            } else {
+                // Fallback: User not logged in, use localStorage only
+                if (data.aircraft) aircraft = data.aircraft;
+                if (data.presentationTypes) presentationTypes = data.presentationTypes;
+                if (data.representatives) representatives = data.representatives;
+                
+                saveData();
+                updateDashboard();
+                updateMobileLayout();
+                alert('Data imported to local storage only. Login to sync to cloud.');
+            }
+            
+            // Reset file input
+            event.target.value = '';
+        } catch (error) {
+            alert('Error importing data: ' + error.message);
+            console.error('Import error:', error);
         }
+    };
+    reader.readAsText(file);
+}
+        // NEW: Push existing local data to backend (for manual sync)
+async function pushLocalDataToBackend() {
+    if (!authToken) {
+        alert('Please log in first to sync data to cloud');
+        return;
+    }
+    
+    if (confirm('This will push all your local data to the cloud. Continue?')) {
+        try {
+            // Show loading message
+            alert('Starting sync process... This may take a moment.');
+            
+            // 1. Sync presentation types
+            if (presentationTypes && presentationTypes.length > 0) {
+                // Clear existing presentation types
+                const existingTypesResponse = await fetch(`${API_BASE}/presentation-types`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (existingTypesResponse.ok) {
+                    const existingTypes = await existingTypesResponse.json();
+                    for (const type of existingTypes.data || []) {
+                        await fetch(`${API_BASE}/presentation-types/${type.id}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'Authorization': `Bearer ${authToken}`,
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                    }
+                }
+                
+                // Add current presentation types
+                for (const type of presentationTypes) {
+                    await fetch(`${API_BASE}/presentation-types`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${authToken}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            name: type.name,
+                            duration: type.duration
+                        })
+                    });
+                }
+            }
+            
+            // 2. Sync representatives
+            if (representatives && representatives.length > 0) {
+                // Clear existing representatives
+                const existingRepsResponse = await fetch(`${API_BASE}/representatives`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (existingRepsResponse.ok) {
+                    const existingReps = await existingRepsResponse.json();
+                    for (const rep of existingReps.data || []) {
+                        await fetch(`${API_BASE}/representatives/${rep.id}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'Authorization': `Bearer ${authToken}`,
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                    }
+                }
+                
+                // Add current representatives
+                for (const repName of representatives) {
+                    await fetch(`${API_BASE}/representatives`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${authToken}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            name: repName
+                        })
+                    });
+                }
+            }
+            
+            // Reload from backend
+            await loadAircraftFromBackend();
+            alert('Sync completed successfully! All local data has been pushed to the cloud.');
+            
+        } catch (error) {
+            alert('Error syncing data to cloud: ' + error.message);
+            console.error('Sync error:', error);
+        }
+    }
+}
 
         // Clear all data
         function clearAllData() {
@@ -3134,3 +3353,4 @@
     </script>
 </body>
 </html>
+
