@@ -192,16 +192,16 @@ app.get('/api/aircraft', async (req, res) => {
       data: data || []
     });
 
- } catch (error) {
+  } catch (error) {
     console.error('Get aircraft error:', error);
     console.error('Error details:', {
-        code: error.code,
-        message: error.message,
-        details: error.details,
-        hint: error.hint
+      code: error.code,
+      message: error.message,
+      details: error.details,
+      hint: error.hint
     });
     res.status(500).json({ error: 'Failed to retrieve aircraft data: ' + error.message });
-}
+  }
 });
 
 // Create new aircraft
@@ -303,7 +303,7 @@ app.delete('/api/aircraft/:id', authenticateToken, async (req, res) => {
     res.status(500).json({ error: 'Failed to delete aircraft' });
   }
 });
-// ==================== ADD THIS NEW SECTION ====================
+
 // ==================== PRESENTATION TYPES ROUTES ====================
 
 // Get presentation types
@@ -446,9 +446,6 @@ app.delete('/api/representatives/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// ==================== CONTINUE WITH EXISTING HTML ROUTES ====================
-app.get('/', (req, res) => {
-  // ... your existing code continues
 // ==================== HTML ROUTES ====================
 
 // Serve main application
@@ -492,8 +489,3 @@ app.listen(PORT, async () => {
 }).on('error', (err) => {
   console.error('❌ Server failed to start:', err);
 });
-
-
-
-
-
