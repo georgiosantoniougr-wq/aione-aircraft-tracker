@@ -303,7 +303,152 @@ app.delete('/api/aircraft/:id', authenticateToken, async (req, res) => {
     res.status(500).json({ error: 'Failed to delete aircraft' });
   }
 });
+// ==================== ADD THIS NEW SECTION ====================
+// ==================== PRESENTATION TYPES ROUTES ====================
 
+// Get presentation types
+app.get('/api/presentation-types', authenticateToken, async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('presentation_types')
+      .select('*')
+      .eq('user_id', req.user.user_id)
+      .order('name');
+
+    if (error) throw error;
+
+    res.json({
+      message: 'Presentation types retrieved successfully',
+      data: data || []
+    });
+
+  } catch (error) {
+    console.error('Get presentation types error:', error);
+    res.status(500).json({ error: 'Failed to retrieve presentation types' });
+  }
+});
+
+// Create presentation type
+app.post('/api/presentation-types', authenticateToken, async (req, res) => {
+  try {
+    const presentationType = {
+      ...req.body,
+      user_id: req.user.user_id
+    };
+
+    const { data, error } = await supabase
+      .from('presentation_types')
+      .insert([presentationType])
+      .select();
+
+    if (error) throw error;
+
+    res.status(201).json({
+      message: 'Presentation type created successfully',
+      data: data[0]
+    });
+
+  } catch (error) {
+    console.error('Create presentation type error:', error);
+    res.status(500).json({ error: 'Failed to create presentation type' });
+  }
+});
+
+// Delete presentation type
+app.delete('/api/presentation-types/:id', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const { error } = await supabase
+      .from('presentation_types')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', req.user.user_id);
+
+    if (error) throw error;
+
+    res.json({ message: 'Presentation type deleted successfully' });
+
+  } catch (error) {
+    console.error('Delete presentation type error:', error);
+    res.status(500).json({ error: 'Failed to delete presentation type' });
+  }
+});
+
+// ==================== REPRESENTATIVES ROUTES ====================
+
+// Get representatives
+app.get('/api/representatives', authenticateToken, async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('representatives')
+      .select('*')
+      .eq('user_id', req.user.user_id)
+      .order('name');
+
+    if (error) throw error;
+
+    res.json({
+      message: 'Representatives retrieved successfully',
+      data: data || []
+    });
+
+  } catch (error) {
+    console.error('Get representatives error:', error);
+    res.status(500).json({ error: 'Failed to retrieve representatives' });
+  }
+});
+
+// Create representative
+app.post('/api/representatives', authenticateToken, async (req, res) => {
+  try {
+    const representative = {
+      ...req.body,
+      user_id: req.user.user_id
+    };
+
+    const { data, error } = await supabase
+      .from('representatives')
+      .insert([representative])
+      .select();
+
+    if (error) throw error;
+
+    res.status(201).json({
+      message: 'Representative created successfully',
+      data: data[0]
+    });
+
+  } catch (error) {
+    console.error('Create representative error:', error);
+    res.status(500).json({ error: 'Failed to create representative' });
+  }
+});
+
+// Delete representative
+app.delete('/api/representatives/:id', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const { error } = await supabase
+      .from('representatives')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', req.user.user_id);
+
+    if (error) throw error;
+
+    res.json({ message: 'Representative deleted successfully' });
+
+  } catch (error) {
+    console.error('Delete representative error:', error);
+    res.status(500).json({ error: 'Failed to delete representative' });
+  }
+});
+
+// ==================== CONTINUE WITH EXISTING HTML ROUTES ====================
+app.get('/', (req, res) => {
+  // ... your existing code continues
 // ==================== HTML ROUTES ====================
 
 // Serve main application
@@ -347,6 +492,7 @@ app.listen(PORT, async () => {
 }).on('error', (err) => {
   console.error('❌ Server failed to start:', err);
 });
+
 
 
 
