@@ -2864,46 +2864,75 @@ function updateMobileLayout() {
         }
 
         // Add presentation type - WITH BACKEND SYNC
-async function addPresentationType() {
-  const nameInput = document.getElementById('new-presentation-name');
-  const durationInput = document.getElementById('new-presentation-duration');
-  
-  const name = nameInput.value.trim();
-  const duration = parseInt(durationInput.value);
-  
-  if (!name) {
-    alert('Please enter a presentation name');
-    return;
-  }
-  
-  if (!duration || duration < 15) {
-    alert('Please enter a valid duration (minimum 15 minutes)');
-    return;
-  }
-  
-  // If not logged in, use localStorage
-  if (!authToken) {
-    // Check for duplicates
-    if (presentationTypes.some(type => type.name.toLowerCase() === name.toLowerCase())) {
-      alert('A presentation type with this name already exists!');
-      return;
-    }
-    
-    const newType = {
-      id: presentationTypes.length > 0 ? Math.max(...presentationTypes.map(t => t.id)) + 1 : 1,
-      name: name,
-      duration: duration
-    };
-    
-    presentationTypes.push(newType);
-    localStorage.setItem('aione_presentation_types', JSON.stringify(presentationTypes));
-    updatePresentationMasterList();
-    
-    // Clear inputs
-    nameInput.value = '';
-    durationInput.value = '';
-    return;
-  }
+        // Add presentation type - WITH BACKEND SYNC
+        async function addPresentationType() {
+            const nameInput = document.getElementById('new-presentation-name');
+            const durationInput = document.getElementById('new-presentation-duration');
+            
+            const name = nameInput.value.trim();
+            const duration = parseInt(durationInput.value);
+            
+            if (!name) {
+                alert('Please enter a presentation name');
+                return;
+            }
+            
+            if (!duration || duration < 15) {
+                alert('Please enter a valid duration (minimum 15 minutes)');
+                return;
+            }
+            
+            // If not logged in, use localStorage
+            if (!authToken) {
+                // Check for duplicates
+                if (presentationTypes.some(type => type.name.toLowerCase() === name.toLowerCase())) {
+                    alert('A presentation type with this name already exists!');
+                    return;
+                }
+                
+                const newType = {
+                    id: presentationTypes.length > 0 ? Math.max(...presentationTypes.map(t => t.id)) + 1 : 1,
+                    name: name,
+                    duration: duration
+                };
+                
+                presentationTypes.push(newType);
+                localStorage.setItem('aione_presentation_types', JSON.stringify(presentationTypes));
+                updatePresentationMasterList();
+                
+                // Clear inputs
+                nameInput.value = '';
+                durationInput.value = '';
+                return;
+            }
+            
+            // If logged in, use backend
+            try {
+                const response = await fetch(`${API_BASE}/presentation-types`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ name, duration })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    presentationTypes.push(data.data);
+                    updatePresentationMasterList();
+                    
+                    // Clear inputs
+                    nameInput.value = '';
+                    durationInput.value = '';
+                } else {
+                    const errorData = await response.json();
+                    alert('Error: ' + errorData.error);
+                }
+            } catch (error) {
+                alert('Failed to add presentation type: ' + error.message);
+            }
+        }
   
   // If logged in, use backend
   try {
@@ -3178,6 +3207,7 @@ async function addRepresentative() {
 </body>
 
 </html>
+
 
 
 
