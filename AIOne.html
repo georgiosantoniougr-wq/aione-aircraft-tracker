@@ -913,8 +913,8 @@
                 <span id="auth-user" style="margin-left: 10px;"></span>
             </div>
             <div class="auth-buttons">
-                <button id="login-btn" class="auth-btn" onclick="showLoginForm()">Login</button>
-                <button id="logout-btn" class="auth-btn" onclick="logout()" style="display: none;">Logout</button>
+                <button id="login-btn" class="auth-btn">Login</button>
+                <button id="logout-btn" class="auth-btn" style="display: none;">Logout</button>
             </div>
         </div>
 
@@ -928,7 +928,7 @@
             </div>
             <button onclick="login()" style="background: #27ae60; color: white; padding: 10px; border: none; border-radius: 5px; width: 100%;">Login</button>
             <div style="text-align: center; margin-top: 10px;">
-                <small>No account? <a href="https://aione-aircraft-tracker.onrender.com/register.html" target="_blank">Register here</a></small>
+                <small>No account? <a href="https://aione-aircraft-tracker-1.onrender.com/register.html" target="_blank">Register here</a></small>
             </div>
         </div>
         
@@ -1288,47 +1288,57 @@
         const API_BASE = 'https://aione-aircraft-tracker-1.onrender.com/api';
         let authToken = localStorage.getItem('aione_token');
         let currentUser = null;
+        
+        // ==================== ROLE PERMISSIONS ====================
+        function canEdit() {
+            return currentUser && (currentUser.role === 'admin' || currentUser.role === 'manager');
+        }
+
+        function canDelete() {
+            return currentUser && currentUser.role === 'admin';
+        }
 
         // NEW: Presentations expansion state
         let presentationsExpanded = false;
         let mobilePresentationsExpanded = false;
 
         // Simple auth functions
-async function login() {
-    const email = document.getElementById('login-email').value;
-    const password = document.getElementById('login-password').value;
+        async function login() {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
 
-    if (!email || !password) {
-        alert('Please enter both email and password');
-        return;
-    }
+            if (!email || !password) {
+                alert('Please enter both email and password');
+                return;
+            }
 
-    try {
-        const response = await fetch(`${API_BASE}/auth/login`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ email, password })
-        });
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password })
+                });
 
-        const data = await response.json();
+                const data = await response.json();
 
-        if (response.ok) {
-            authToken = data.token;
-            currentUser = data.user;
-            localStorage.setItem('aione_token', authToken);
-            localStorage.setItem('aione_user', JSON.stringify(currentUser));
-            updateAuthUI();
-            hideLoginForm();
-            loadAircraftFromBackend();
-        } else {
-            alert('Login failed: ' + data.error);
+                if (response.ok) {
+                    authToken = data.token;
+                    currentUser = data.user;
+                    localStorage.setItem('aione_token', authToken);
+                    localStorage.setItem('aione_user', JSON.stringify(currentUser));
+                    updateAuthUI();
+                    hideLoginForm();
+                    loadAircraftFromBackend();
+                } else {
+                    alert('Login failed: ' + data.error);
+                }
+            } catch (error) {
+                alert('Login error: ' + error.message);
+            }
         }
-    } catch (error) {
-        alert('Login error: ' + error.message);
-    }
-}
+
         function logout() {
             authToken = null;
             currentUser = null;
@@ -1338,14 +1348,38 @@ async function login() {
             loadLocalData();
         }
 
+        // Show login form
         function showLoginForm() {
             const loginForm = document.getElementById('login-form');
             if (loginForm) loginForm.style.display = 'block';
         }
 
+        // Hide login form  
         function hideLoginForm() {
             const loginForm = document.getElementById('login-form');
             if (loginForm) loginForm.style.display = 'none';
+        }
+
+        // Initialize event listeners when page loads
+        function initEventListeners() {
+            const loginBtn = document.getElementById('login-btn');
+            const logoutBtn = document.getElementById('logout-btn');
+            
+            console.log('Setting up event listeners...');
+            console.log('Login button found:', loginBtn);
+            console.log('Logout button found:', logoutBtn);
+            
+            if (loginBtn) {
+                loginBtn.addEventListener('click', showLoginForm);
+                console.log('Login event listener added successfully');
+            } else {
+                console.log('ERROR: Login button not found!');
+            }
+            
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', logout);
+                console.log('Logout event listener added successfully');
+            }
         }
 
         function updateAuthUI() {
@@ -1365,32 +1399,12 @@ async function login() {
                 if (loginBtn) loginBtn.style.display = 'block';
                 if (logoutBtn) logoutBtn.style.display = 'none';
             }
-        }
-
-        // Backend data loading
-        async function loadAircraftFromBackend() {
-            try {
-                const response = await fetch(`${API_BASE}/aircraft`, {
-                    headers: {
-                        'Authorization': `Bearer ${authToken}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    aircraft = data.data || [];
-                    updateDashboard();
-                    updateMobileLayout();
-                } else {
-                    throw new Error('Failed to load from backend');
-                }
-            } catch (error) {
-    console.log('Backend load failed:', error);
-    aircraft = [];
-    updateDashboard();
-    updateMobileLayout();
-}
+            
+            // Hide/show buttons based on role
+            const addButton = document.querySelector('.add-btn');
+            if (addButton) {
+                addButton.style.display = canEdit() ? 'block' : 'none';
+            }
         }
 
         // ==================== YOUR ORIGINAL JAVASCRIPT ====================
@@ -1402,7 +1416,7 @@ async function login() {
             'QTR': { name: 'Qatar Airways', logo: 'https://logo.clearbit.com/qatarairways.com' },
             'THA': { name: 'Thai Airways', logo: 'https://logo.clearbit.com/thaiairways.com' },
             'CHH': { name: 'Hainan Airlines', logo: 'https://logo.clearbit.com/hnair.com' },
-            'SPQ': { name: 'Sun PhuQuoc Airways', logo: 'https://via.placeholder.com/80x40?text=SPQ' },
+            'SPQ': { name: 'Sun PhuQuoc Airways', logo: '' }, // No logo - will use placeholder
             'AHY': { name: 'Azerbaijan Airlines', logo: 'https://logo.clearbit.com/azal.az' },
             'UAL': { name: 'United Airlines', logo: 'https://logo.clearbit.com/united.com' },
             'DAL': { name: 'Delta Air Lines', logo: 'https://logo.clearbit.com/delta.com' },
@@ -1492,8 +1506,103 @@ async function login() {
             { id: 5, name: "First Flight Readiness", duration: 60 }
         ];
 
-        let presentationTypes = JSON.parse(localStorage.getItem('aione_presentation_types')) || defaultPresentationTypes;
-        let representatives = JSON.parse(localStorage.getItem('aione_representatives')) || ["John Smith", "Maria Garcia", "David Chen"];
+        let presentationTypes = [];
+        let representatives = [];
+
+        // ==================== BACKEND DATA LOADING ====================
+        async function loadAircraftFromBackend() {
+            try {
+                const response = await fetch(`${API_BASE}/aircraft`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    aircraft = data.data || [];
+                    
+                    // ALSO load presentations and representatives from backend
+                    await loadPresentationTypes();
+                    await loadRepresentatives();
+                    
+                    updateDashboard();
+                    updateMobileLayout();
+                } else {
+                    throw new Error('Failed to load from backend');
+                }
+            } catch (error) {
+                console.log('Backend load failed:', error);
+                // Load from localStorage as fallback
+                aircraft = JSON.parse(localStorage.getItem('aione_aircraft')) || [];
+                presentationTypes = JSON.parse(localStorage.getItem('aione_presentation_types')) || defaultPresentationTypes;
+                representatives = JSON.parse(localStorage.getItem('aione_representatives')) || ["John Smith", "Maria Garcia", "David Chen"];
+                
+                updateDashboard();
+                updateMobileLayout();
+            }
+        }
+
+        // NEW: Load presentation types from backend
+        async function loadPresentationTypes() {
+            try {
+                if (authToken) {
+                    const response = await fetch(`${API_BASE}/presentation-types`, {
+                        headers: {
+                            'Authorization': `Bearer ${authToken}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        presentationTypes = data.data || [];
+                        localStorage.setItem('aione_presentation_types', JSON.stringify(presentationTypes));
+                        return;
+                    }
+                }
+                
+                // Fallback to localStorage
+                const localData = JSON.parse(localStorage.getItem('aione_presentation_types'));
+                presentationTypes = localData || defaultPresentationTypes;
+                
+            } catch (error) {
+                console.log('Backend presentation types load failed:', error);
+                const localData = JSON.parse(localStorage.getItem('aione_presentation_types'));
+                presentationTypes = localData || defaultPresentationTypes;
+            }
+        }
+
+        // NEW: Load representatives from backend
+        async function loadRepresentatives() {
+            try {
+                if (authToken) {
+                    const response = await fetch(`${API_BASE}/representatives`, {
+                        headers: {
+                            'Authorization': `Bearer ${authToken}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        representatives = data.data ? data.data.map(rep => rep.name) : [];
+                        localStorage.setItem('aione_representatives', JSON.stringify(representatives));
+                        return;
+                    }
+                }
+                
+                // Fallback to localStorage
+                const localData = JSON.parse(localStorage.getItem('aione_representatives'));
+                representatives = localData || ["John Smith", "Maria Garcia", "David Chen"];
+                
+            } catch (error) {
+                console.log('Backend representatives load failed:', error);
+                const localData = JSON.parse(localStorage.getItem('aione_representatives'));
+                representatives = localData || ["John Smith", "Maria Garcia", "David Chen"];
+            }
+        }
 
         // ==================== MISSING FUNCTIONS TO FIX INITIALIZATION ERROR ====================
 
@@ -1644,12 +1753,14 @@ async function login() {
                         <td>${ac.status}</td>
                         <td>
                             <button class="edit-btn" onclick="showAircraftDetail(${actualIndex})">View</button>
-                            <button class="edit-btn" onclick="showEditForm(${actualIndex})">Edit</button>
-                            ${isArchived ? 
-                                `<button class="unarchive-btn" onclick="toggleArchive(${actualIndex})">Unarchive</button>` : 
-                                `<button class="archive-btn" onclick="toggleArchive(${actualIndex})">Archive</button>`
-                            }
-                            <button onclick="showPresentationForm(${actualIndex})">Add Presentation</button>
+                            ${canEdit() ? `
+                                <button class="edit-btn" onclick="showEditForm(${actualIndex})">Edit</button>
+                                ${isArchived ? 
+                                    `<button class="unarchive-btn" onclick="toggleArchive(${actualIndex})">Unarchive</button>` : 
+                                    `<button class="archive-btn" onclick="toggleArchive(${actualIndex})">Archive</button>`
+                                }
+                                <button onclick="showPresentationForm(${actualIndex})">Add Presentation</button>
+                            ` : ''}
                         </td>
                     </tr>
                 `;
@@ -1705,17 +1816,19 @@ async function login() {
         }
 
         // Show aircraft add form - WITH AUTH CHECK
-       function showAddForm() {
-    if (!authToken) {
-        alert('Please log in to add aircraft');
-        showLoginForm();
-        return;
-    }
-    document.getElementById('modal-title').textContent = 'Add New Aircraft';
-    document.getElementById('aircraft-form').reset();
-    document.getElementById('edit-index').value = '';
-    document.getElementById('aircraft-modal').style.display = 'block';
-}
+        function showAddForm() {
+            // AUTH CHECK - Block if not logged in
+            if (!authToken) {
+                alert('Please log in to add aircraft');
+                showLoginForm();
+                return;
+            }
+            
+            document.getElementById('modal-title').textContent = 'Add New Aircraft';
+            document.getElementById('aircraft-form').reset();
+            document.getElementById('edit-index').value = '';
+            document.getElementById('aircraft-modal').style.display = 'block';
+        }
 
         // Show aircraft edit form - WITH AUTH CHECK
         function showEditForm(index) {
@@ -1836,69 +1949,18 @@ async function login() {
                 presentations: editIndex !== '' ? aircraft[editIndex].presentations : []
             };
             
-            try {
-    // Save to backend
-    const response = await fetch(`${API_BASE}/aircraft`, {
-        method: editIndex !== '' ? 'PUT' : 'POST',
-        headers: {
-            'Authorization': `Bearer ${authToken}`,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(aircraftData)
-    });
-
-    if (!response.ok) throw new Error('Backend save failed');
-
-    // Reload from backend to ensure sync
-    await loadAircraftFromBackend();
-    hideModal();
-} catch (error) {
-    console.error('Save failed:', error);
-    alert('Failed to save to cloud. Using local storage instead.');
-    // Fallback to local storage
-   try {
-    // If editing, we need the aircraft ID - for now we'll handle add only
-    if (editIndex !== '') {
-        // For edit, fallback to localStorage for now
-        aircraft[editIndex] = aircraftData;
-        saveData();
-        updateDashboard();
-        updateMobileLayout();
-        hideModal();
-    } else {
-        // ADD NEW AIRCRAFT - Save to backend
-        const response = await fetch(`${API_BASE}/aircraft`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${authToken}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(aircraftData)
-        });
-
-        if (!response.ok) throw new Error('Backend save failed');
-
-        const result = await response.json();
-        console.log('Aircraft saved to cloud:', result);
-        
-        // Reload from backend to ensure sync
-        await loadAircraftFromBackend();
-        hideModal();
-    }
-} catch (error) {
-    console.error('Save failed:', error);
-    alert('Failed to save to cloud. Using local storage instead.');
-    // Fallback to local storage
-    if (editIndex !== '') {
-        aircraft[editIndex] = aircraftData;
-    } else {
-        aircraft.push(aircraftData);
-    }
-    saveData();
-    updateDashboard();
-    updateMobileLayout();
-    hideModal();
-}
+            if (editIndex !== '') {
+                // Update existing aircraft
+                aircraft[editIndex] = aircraftData;
+            } else {
+                // Add new aircraft
+                aircraft.push(aircraftData);
+            }
+            
+            saveData();
+            updateDashboard();
+            updateMobileLayout();
+            hideModal();
         });
 
         // Show aircraft details
@@ -1985,18 +2047,19 @@ async function login() {
                     </div>
                 </div>
                 
-                <div style="margin: 20px 0; text-align: center;">
-                    <button class="edit-btn" onclick="showEditForm(${index})">Edit Aircraft</button>
-                    <button onclick="showPresentationForm(${index})">Add Presentation</button>
-                    ${ac.status === 'Archived' ? 
-                        `<button class="unarchive-btn" onclick="toggleArchive(${index})">Unarchive</button>` : 
-                        `<button class="archive-btn" onclick="toggleArchive(${index})">Archive</button>`
-                    }
+                 <div style="margin: 20px 0; text-align: center;">
+                    ${canEdit() ? `
+                        <button class="edit-btn" onclick="showEditForm(${index})">Edit Aircraft</button>
+                        <button onclick="showPresentationForm(${index})">Add Presentation</button>
+                        ${ac.status === 'Archived' ? 
+                            `<button class="unarchive-btn" onclick="toggleArchive(${index})">Unarchive</button>` : 
+                            `<button class="archive-btn" onclick="toggleArchive(${index})">Archive</button>`
+                        }
+                    ` : ''}
                 </div>
             `;
             
             // Add presentations if any
-                        // Add presentations if any
             if (ac.presentations && ac.presentations.length > 0) {
                 // SORT presentations alphabetically by type
                 const sortedPresentations = [...ac.presentations].sort((a, b) => a.type.localeCompare(b.type));
@@ -2049,7 +2112,9 @@ async function login() {
                 img.alt = code;
                 img.className = 'airline-logo';
                 img.onerror = function() {
-                    this.parentNode.innerHTML = `<div class="logo-placeholder">${code}</div>`;
+                    if (this.parentNode) {
+                        this.parentNode.innerHTML = `<div class="logo-placeholder">${code}</div>`;
+                    }
                 };
                 return img;
             } else {
@@ -2261,39 +2326,28 @@ async function login() {
                 const conflictClass = hasConflict ? 'conflict' : '';
                 
                 html += `
-                    <div class="presentation-card ${completionClass} ${conflictClass}" onclick="toggleMobilePresentationDetails(this)">
-    <div class="presentation-info">
-        <div class="presentation-msn">
-            ${pres.msn}
-            ${hasConflict ? '<span class="conflict-badge">Conflict</span>' : ''}
-        </div>
-        <div class="presentation-type">${pres.type}</div>
-        <div class="presentation-datetime">${formatDateTime(pres.datetime)}</div>
-        <div class="presentation-location">${pres.location || 'Location not specified'}</div>
-        
-        <div class="presentation-details-full" style="display: none;">
-            <div><strong>Aircraft:</strong> ${pres.msn} (${pres.owner} → ${pres.operator})</div>
-            <div><strong>Completion:</strong> ${pres.completion || 'full'}</div>
-            ${pres.representative ? `<div><strong>Representative:</strong> ${pres.representative}</div>` : ''}
-            ${pres.qubs ? `<div><strong>QLBs:</strong> ${pres.qubs}</div>` : ''}
-            ${pres.remarks ? `<div><strong>Remarks:</strong> ${pres.remarks}</div>` : ''}
-            <div style="margin-top: 10px;">
-                <button class="edit-btn" onclick="event.stopPropagation(); editPresentation(${pres.aircraftIndex}, ${pres.presentationIndex})">Edit</button>
-                <button class="archive-btn" onclick="event.stopPropagation(); deletePresentation(${pres.aircraftIndex}, ${pres.presentationIndex})">Delete</button>
-                <button class="done-btn" onclick="event.stopPropagation(); completePresentation(${pres.aircraftIndex}, ${pres.presentationIndex})">Mark Done</button>
-            </div>
-        </div>
+                    <div class="presentation-card ${completionClass} ${conflictClass}" onclick="togglePresentationDetails(this)">
+                        <div class="presentation-info">
+                            <div class="presentation-msn">
+                                ${pres.msn}
+                                ${hasConflict ? '<span class="conflict-badge">Conflict</span>' : ''}
+                            </div>
+                            <div class="presentation-type">${pres.type}</div>
+                            <div class="presentation-datetime">${formatDateTime(pres.datetime)}</div>
+                            <div class="presentation-location">${pres.location || 'Location not specified'}</div>
                             
-                            <div class="presentation-details-full">
+                            <div class="presentation-details-full" style="display: none;">
                                 <div><strong>Aircraft:</strong> ${pres.msn} (${pres.owner} → ${pres.operator})</div>
                                 <div><strong>Completion:</strong> ${pres.completion || 'full'}</div>
                                 ${pres.representative ? `<div><strong>Representative:</strong> ${pres.representative}</div>` : ''}
                                 ${pres.qubs ? `<div><strong>QLBs:</strong> ${pres.qubs}</div>` : ''}
                                 ${pres.remarks ? `<div><strong>Remarks:</strong> ${pres.remarks}</div>` : ''}
                                 <div style="margin-top: 10px;">
-                                    <button class="edit-btn" onclick="event.stopPropagation(); editPresentation(${pres.aircraftIndex}, ${pres.presentationIndex})">Edit</button>
-                                    <button class="archive-btn" onclick="event.stopPropagation(); deletePresentation(${pres.aircraftIndex}, ${pres.presentationIndex})">Delete</button>
-                                    <button class="done-btn" onclick="event.stopPropagation(); completePresentation(${pres.aircraftIndex}, ${pres.presentationIndex})">Mark Done</button>
+                                    ${canEdit() ? `
+                                        <button class="edit-btn" onclick="event.stopPropagation(); editPresentation(${pres.aircraftIndex}, ${pres.presentationIndex})">Edit</button>
+                                        ${canDelete() ? `<button class="archive-btn" onclick="event.stopPropagation(); deletePresentation(${pres.aircraftIndex}, ${pres.presentationIndex})">Delete</button>` : ''}
+                                        <button class="done-btn" onclick="event.stopPropagation(); completePresentation(${pres.aircraftIndex}, ${pres.presentationIndex})">Mark Done</button>
+                                    ` : ''}
                                 </div>
                             </div>
                         </div>
@@ -2365,18 +2419,20 @@ async function login() {
                             <div class="presentation-type">${pres.type}</div>
                             <div class="presentation-datetime">${formatDateTime(pres.datetime)}</div>
                             <div class="presentation-location">${pres.location || 'Location not specified'}</div>
-            <div class="presentation-details-full" style="display: none;">
-    <div><strong>Aircraft:</strong> ${pres.msn} (${pres.owner} → ${pres.operator})</div>
-    <div><strong>Completion:</strong> ${pres.completion || 'full'}</div>
-    ${pres.representative ? `<div><strong>Representative:</strong> ${pres.representative}</div>` : ''}
-    ${pres.qubs ? `<div><strong>QLBs:</strong> ${pres.qubs}</div>` : ''}
-    ${pres.remarks ? `<div><strong>Remarks:</strong> ${pres.remarks}</div>` : ''}
-    <div style="margin-top: 10px;">
-        <button class="edit-btn" onclick="event.stopPropagation(); editPresentation(${pres.aircraftIndex}, ${pres.presentationIndex})">Edit</button>
-        <button class="archive-btn" onclick="event.stopPropagation(); deletePresentation(${pres.aircraftIndex}, ${pres.presentationIndex})">Delete</button>
-        <button class="done-btn" onclick="event.stopPropagation(); completePresentation(${pres.aircraftIndex}, ${pres.presentationIndex})">Mark Done</button>
-    </div>
-</div>
+                            <div class="presentation-details-full" style="display: none;">
+                                <div><strong>Aircraft:</strong> ${pres.msn} (${pres.owner} → ${pres.operator})</div>
+                                <div><strong>Completion:</strong> ${pres.completion || 'full'}</div>
+                                ${pres.representative ? `<div><strong>Representative:</strong> ${pres.representative}</div>` : ''}
+                                ${pres.qubs ? `<div><strong>QLBs:</strong> ${pres.qubs}</div>` : ''}
+                                ${pres.remarks ? `<div><strong>Remarks:</strong> ${pres.remarks}</div>` : ''}
+                                <div style="margin-top: 10px;">
+                                    ${canEdit() ? `
+                                        <button class="edit-btn" onclick="event.stopPropagation(); editPresentation(${pres.aircraftIndex}, ${pres.presentationIndex})">Edit</button>
+                                        ${canDelete() ? `<button class="archive-btn" onclick="event.stopPropagation(); deletePresentation(${pres.aircraftIndex}, ${pres.presentationIndex})">Delete</button>` : ''}
+                                        <button class="done-btn" onclick="event.stopPropagation(); completePresentation(${pres.aircraftIndex}, ${pres.presentationIndex})">Mark Done</button>
+                                    ` : ''}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -2403,12 +2459,13 @@ async function login() {
         }
 
         // Toggle mobile presentation details
-function toggleMobilePresentationDetails(element) {
-    const details = element.querySelector('.presentation-details-full');
-    if (details) {
-        details.style.display = details.style.display === 'block' ? 'none' : 'block';
-    }
-}
+        function toggleMobilePresentationDetails(element) {
+            const details = element.querySelector('.presentation-details-full');
+            if (details) {
+                details.style.display = details.style.display === 'block' ? 'none' : 'block';
+            }
+        }
+
         // Update sorted presentations
         function updateSortedPresentations() {
             updateUpcomingPresentations();
@@ -2437,43 +2494,43 @@ function toggleMobilePresentationDetails(element) {
             return false;
         }
 
-        // Update mobile layout
         // Update mobile layout - SIMPLIFIED VERSION
-function updateMobileLayout() {
-    const isMobile = window.innerWidth <= 768;
-    
-    // Show/hide mobile sections
-    const mobileHomeStats = document.getElementById('mobile-home-stats');
-    const mobileAircraftSection = document.getElementById('mobile-aircraft-section');
-    const mobilePresentationsSection = document.getElementById('mobile-presentations-section');
-    
-    if (mobileHomeStats) mobileHomeStats.style.display = isMobile ? 'grid' : 'none';
-    if (mobileAircraftSection) mobileAircraftSection.style.display = isMobile ? 'block' : 'none';
-    if (mobilePresentationsSection) mobilePresentationsSection.style.display = isMobile ? 'block' : 'none';
-    
-    // Show/hide desktop tab system
-    const desktopTabSystem = document.querySelector('.fleet-deliveries-tabs');
-    if (desktopTabSystem) {
-        desktopTabSystem.style.display = isMobile ? 'none' : 'block';
-    }
-    
-    // Show/hide desktop table
-    const desktopAircraftTable = document.getElementById('desktop-aircraft-table');
-    if (desktopAircraftTable) desktopAircraftTable.style.display = isMobile ? 'none' : 'table';
-    
-    // Show/hide presentations dashboard (FIXING THE DUPLICATION)
-    const presentationsDashboard = document.querySelector('.dashboard');
-    if (presentationsDashboard) {
-        presentationsDashboard.style.display = isMobile ? 'none' : 'block';
-    }
-    
-    if (isMobile) {
-        if (typeof renderMobileAircraftList === 'function') renderMobileAircraftList();
-        if (typeof updateMobilePresentations === 'function') updateMobilePresentations();
-    } else {
-        if (typeof updateDeliveriesTab === 'function') updateDeliveriesTab();
-    }
-}
+        function updateMobileLayout() {
+            const isMobile = window.innerWidth <= 768;
+            
+            // Show/hide mobile sections
+            const mobileHomeStats = document.getElementById('mobile-home-stats');
+            const mobileAircraftSection = document.getElementById('mobile-aircraft-section');
+            const mobilePresentationsSection = document.getElementById('mobile-presentations-section');
+            
+            if (mobileHomeStats) mobileHomeStats.style.display = isMobile ? 'grid' : 'none';
+            if (mobileAircraftSection) mobileAircraftSection.style.display = isMobile ? 'block' : 'none';
+            if (mobilePresentationsSection) mobilePresentationsSection.style.display = isMobile ? 'block' : 'none';
+            
+            // Show/hide desktop tab system
+            const desktopTabSystem = document.querySelector('.fleet-deliveries-tabs');
+            if (desktopTabSystem) {
+                desktopTabSystem.style.display = isMobile ? 'none' : 'block';
+            }
+            
+            // Show/hide desktop table
+            const desktopAircraftTable = document.getElementById('desktop-aircraft-table');
+            if (desktopAircraftTable) desktopAircraftTable.style.display = isMobile ? 'none' : 'table';
+            
+            // Show/hide presentations dashboard (FIXING THE DUPLICATION)
+            const presentationsDashboard = document.querySelector('.dashboard');
+            if (presentationsDashboard) {
+                presentationsDashboard.style.display = isMobile ? 'none' : 'block';
+            }
+            
+            if (isMobile) {
+                renderMobileAircraftList();
+                updateMobilePresentations();
+            } else {
+                updateDeliveriesTab();
+            }
+        }
+
         // Render mobile aircraft list
         function renderMobileAircraftList() {
             const upcomingContainer = document.getElementById('upcoming-deliveries');
@@ -2604,14 +2661,14 @@ function updateMobileLayout() {
             // Get current aircraft
             const currentAircraft = aircraft[aircraftIndex];
             
-                    // Populate presentation type dropdown - FILTER OUT completed "full" presentations
-        const typeSelect = document.getElementById('presentation-type');
-        typeSelect.innerHTML = '<option value="">Select Presentation Type</option>';
-        
-        // SORT presentation types alphabetically
-        const sortedTypes = [...presentationTypes].sort((a, b) => a.name.localeCompare(b.name));
-        
-        sortedTypes.forEach(type => {
+            // Populate presentation type dropdown - FILTER OUT completed "full" presentations
+            const typeSelect = document.getElementById('presentation-type');
+            typeSelect.innerHTML = '<option value="">Select Presentation Type</option>';
+            
+            // SORT presentation types alphabetically
+            const sortedTypes = [...presentationTypes].sort((a, b) => a.name.localeCompare(b.name));
+            
+            sortedTypes.forEach(type => {
                 // Check if this presentation type already exists as "full" for this aircraft
                 const existingFullPresentation = currentAircraft.presentations?.find(p => 
                     p.type === type.name && p.completion === 'full'
@@ -2703,6 +2760,10 @@ function updateMobileLayout() {
 
         // Edit presentation
         function editPresentation(aircraftIndex, presentationIndex) {
+            if (!canEdit()) {
+                alert('You do not have permission to edit presentations');
+                return;
+            }
             const pres = aircraft[aircraftIndex].presentations[presentationIndex];
             
             document.getElementById('presentation-modal-title').textContent = 'Edit Presentation';
@@ -2743,6 +2804,10 @@ function updateMobileLayout() {
 
         // Delete presentation
         function deletePresentation(aircraftIndex, presentationIndex) {
+            if (!canDelete()) {
+                alert('You do not have permission to delete presentations');
+                return;
+            }
             if (confirm('Are you sure you want to delete this presentation?')) {
                 aircraft[aircraftIndex].presentations.splice(presentationIndex, 1);
                 saveData();
@@ -2758,6 +2823,10 @@ function updateMobileLayout() {
 
         // Complete presentation
         function completePresentation(aircraftIndex, presentationIndex) {
+            if (!canEdit()) {
+                alert('You do not have permission to complete presentations');
+                return;
+            }
             aircraft[aircraftIndex].presentations[presentationIndex].status = 'completed';
             saveData();
             updateDashboard();
@@ -2780,8 +2849,8 @@ function updateMobileLayout() {
             }
         }
 
-        // Add presentation type
-        function addPresentationType() {
+        // Add presentation type - WITH BACKEND SYNC
+        async function addPresentationType() {
             const nameInput = document.getElementById('new-presentation-name');
             const durationInput = document.getElementById('new-presentation-duration');
             
@@ -2798,25 +2867,56 @@ function updateMobileLayout() {
                 return;
             }
             
-            // Check for duplicates
-            if (presentationTypes.some(type => type.name.toLowerCase() === name.toLowerCase())) {
-                alert('A presentation type with this name already exists!');
+            // If not logged in, use localStorage
+            if (!authToken) {
+                // Check for duplicates
+                if (presentationTypes.some(type => type.name.toLowerCase() === name.toLowerCase())) {
+                    alert('A presentation type with this name already exists!');
+                    return;
+                }
+                
+                const newType = {
+                    id: presentationTypes.length > 0 ? Math.max(...presentationTypes.map(t => t.id)) + 1 : 1,
+                    name: name,
+                    duration: duration
+                };
+                
+                presentationTypes.push(newType);
+                localStorage.setItem('aione_presentation_types', JSON.stringify(presentationTypes));
+                updatePresentationMasterList();
+                
+                // Clear inputs
+                nameInput.value = '';
+                durationInput.value = '';
                 return;
             }
             
-            const newType = {
-                id: presentationTypes.length > 0 ? Math.max(...presentationTypes.map(t => t.id)) + 1 : 1,
-                name: name,
-                duration: duration
-            };
-            
-            presentationTypes.push(newType);
-            saveData();
-            updatePresentationMasterList();
-            
-            // Clear inputs
-            nameInput.value = '';
-            durationInput.value = '';
+            // If logged in, use backend
+            try {
+                const response = await fetch(`${API_BASE}/presentation-types`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ name, duration })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    presentationTypes.push(data.data);
+                    updatePresentationMasterList();
+                    
+                    // Clear inputs
+                    nameInput.value = '';
+                    durationInput.value = '';
+                } else {
+                    const errorData = await response.json();
+                    alert('Error: ' + errorData.error);
+                }
+            } catch (error) {
+                alert('Failed to add presentation type: ' + error.message);
+            }
         }
 
         // Delete presentation type
@@ -2862,8 +2962,8 @@ function updateMobileLayout() {
             container.innerHTML = html;
         }
 
-        // Add representative
-        function addRepresentative() {
+        // Add representative - WITH BACKEND SYNC
+        async function addRepresentative() {
             const nameInput = document.getElementById('new-representative-name');
             const name = nameInput.value.trim();
             
@@ -2872,18 +2972,48 @@ function updateMobileLayout() {
                 return;
             }
             
-            // Check for duplicates
-            if (representatives.some(rep => rep.toLowerCase() === name.toLowerCase())) {
-                alert('A representative with this name already exists!');
+            // If not logged in, use localStorage
+            if (!authToken) {
+                // Check for duplicates
+                if (representatives.some(rep => rep.toLowerCase() === name.toLowerCase())) {
+                    alert('A representative with this name already exists!');
+                    return;
+                }
+                
+                representatives.push(name);
+                localStorage.setItem('aione_representatives', JSON.stringify(representatives));
+                updateRepresentativesList();
+                
+                // Clear input
+                nameInput.value = '';
                 return;
             }
             
-            representatives.push(name);
-            saveData();
-            updateRepresentativesList();
-            
-            // Clear input
-            nameInput.value = '';
+            // If logged in, use backend
+            try {
+                const response = await fetch(`${API_BASE}/representatives`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ name })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    representatives.push(data.data.name);
+                    updateRepresentativesList();
+                    
+                    // Clear input
+                    nameInput.value = '';
+                } else {
+                    const errorData = await response.json();
+                    alert('Error: ' + errorData.error);
+                }
+            } catch (error) {
+                alert('Failed to add representative: ' + error.message);
+            }
         }
 
         // Delete representative
@@ -2921,26 +3051,24 @@ function updateMobileLayout() {
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
-                    const importedData = JSON.parse(e.target.result);
+                    const data = JSON.parse(e.target.result);
                     
-                    if (confirm('This will replace all current data. Are you sure?')) {
-                        if (importedData.aircraft) aircraft = importedData.aircraft;
-                        if (importedData.presentationTypes) presentationTypes = importedData.presentationTypes;
-                        if (importedData.representatives) representatives = importedData.representatives;
-                        
-                        saveData();
-                        updateDashboard();
-                        updateMobileLayout();
-                        alert('Data imported successfully!');
-                    }
+                    if (data.aircraft) aircraft = data.aircraft;
+                    if (data.presentationTypes) presentationTypes = data.presentationTypes;
+                    if (data.representatives) representatives = data.representatives;
+                    
+                    saveData();
+                    updateDashboard();
+                    updateMobileLayout();
+                    alert('Data imported successfully!');
+                    
+                    // Reset file input
+                    event.target.value = '';
                 } catch (error) {
                     alert('Error importing data: ' + error.message);
                 }
             };
             reader.readAsText(file);
-            
-            // Reset file input
-            event.target.value = '';
         }
 
         // Clear all data
@@ -2993,6 +3121,9 @@ function updateMobileLayout() {
                 window.addEventListener('resize', updateMobileLayout);
                 
                 console.log('AIOne Aircraft Tracker initialized successfully');
+                
+                // Initialize event listeners
+                initEventListeners();
             } catch (error) {
                 console.error('Initialization error:', error);
                 alert('Error initializing application: ' + error.message);
@@ -3002,9 +3133,4 @@ function updateMobileLayout() {
         window.onload = initApp;
     </script>
 </body>
-
 </html>
-
-
-
-
