@@ -175,7 +175,7 @@ app.post('/api/auth/login', async (req, res) => {
 // ==================== AIRCRAFT DATA ROUTES ====================
 
 // Get all aircraft for authenticated user
-app.get('/api/aircraft', async (req, res) => {
+app.get('/api/aircraft', authenticateToken, async (req, res) => {
   // Temporary: Add a mock user for testing
   try {
     const { data, error } = await supabase
@@ -488,4 +488,5 @@ app.listen(PORT, async () => {
 }).on('error', (err) => {
   console.error('❌ Server failed to start:', err);
 });
+
 
