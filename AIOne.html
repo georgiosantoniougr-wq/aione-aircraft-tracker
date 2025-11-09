@@ -1365,7 +1365,7 @@ function canDelete() {
             const loginForm = document.getElementById('login-form');
             if (loginForm) loginForm.style.display = 'none';
         }
-                // Initialize event listeners when page loads
+             // Initialize event listeners when page loads
         function initEventListeners() {
             const loginBtn = document.getElementById('login-btn');
             const logoutBtn = document.getElementById('logout-btn');
@@ -1380,6 +1380,9 @@ function canDelete() {
                 console.log('Logout event listener added');
             }
         }
+
+        // CALL the function to set up event listeners
+        initEventListeners();
 
     function updateAuthUI() {
     const authStatus = document.getElementById('auth-status');
@@ -3251,6 +3254,7 @@ function updateMobileLayout() {
 </body>
 
 </html>
+
 
 
 
