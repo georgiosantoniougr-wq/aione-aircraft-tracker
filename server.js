@@ -190,10 +190,16 @@ app.get('/api/aircraft', authenticateToken, async (req, res) => {
       data: data || []
     });
 
-  } catch (error) {
+ } catch (error) {
     console.error('Get aircraft error:', error);
-    res.status(500).json({ error: 'Failed to retrieve aircraft data' });
-  }
+    console.error('Error details:', {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint
+    });
+    res.status(500).json({ error: 'Failed to retrieve aircraft data: ' + error.message });
+}
 });
 
 // Create new aircraft
@@ -339,5 +345,6 @@ app.listen(PORT, async () => {
 }).on('error', (err) => {
   console.error('❌ Server failed to start:', err);
 });
+
 
 
