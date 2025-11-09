@@ -1453,11 +1453,11 @@ async function loadAircraftFromBackend() {
   }
 }
 
-// NEW: Load representatives from backend
-async function loadRepresentatives() {
+// NEW: Load presentation types from backend
+async function loadPresentationTypes() {
   try {
     if (authToken) {
-      const response = await fetch(`${API_BASE}/representatives`, {
+      const response = await fetch(`${API_BASE}/presentation-types`, {
         headers: {
           'Authorization': `Bearer ${authToken}`,
           'Content-Type': 'application/json'
@@ -1466,20 +1466,20 @@ async function loadRepresentatives() {
       
       if (response.ok) {
         const data = await response.json();
-        representatives = data.data ? data.data.map(rep => rep.name) : [];
-        localStorage.setItem('aione_representatives', JSON.stringify(representatives));
+        presentationTypes = data.data || [];
+        localStorage.setItem('aione_presentation_types', JSON.stringify(presentationTypes));
         return;
       }
     }
     
     // Fallback to localStorage
-    const localData = JSON.parse(localStorage.getItem('aione_representatives'));
-    representatives = localData || ["John Smith", "Maria Garcia", "David Chen"];
+    const localData = JSON.parse(localStorage.getItem('aione_presentation_types'));
+    presentationTypes = localData || defaultPresentationTypes;
     
   } catch (error) {
-    console.log('Backend representatives load failed:', error);
-    const localData = JSON.parse(localStorage.getItem('aione_representatives'));
-    representatives = localData || ["John Smith", "Maria Garcia", "David Chen"];
+    console.log('Backend presentation types load failed:', error);
+    const localData = JSON.parse(localStorage.getItem('aione_presentation_types'));
+    presentationTypes = localData || defaultPresentationTypes;
   }
 }
 
@@ -3246,7 +3246,6 @@ function updateMobileLayout() {
 </body>
 
 </html>
-
 
 
 
