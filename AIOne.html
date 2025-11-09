@@ -2259,11 +2259,13 @@ async function login() {
                                 ${pres.representative ? `<div><strong>Representative:</strong> ${pres.representative}</div>` : ''}
                                 ${pres.qubs ? `<div><strong>QLBs:</strong> ${pres.qubs}</div>` : ''}
                                 ${pres.remarks ? `<div><strong>Remarks:</strong> ${pres.remarks}</div>` : ''}
-                                <div style="margin-top: 10px;">
-                                    <button class="edit-btn" onclick="event.stopPropagation(); editPresentation(${pres.aircraftIndex}, ${pres.presentationIndex})">Edit</button>
-                                    <button class="archive-btn" onclick="event.stopPropagation(); deletePresentation(${pres.aircraftIndex}, ${pres.presentationIndex})">Delete</button>
-                                    <button class="done-btn" onclick="event.stopPropagation(); completePresentation(${pres.aircraftIndex}, ${pres.presentationIndex})">Mark Done</button>
-                                </div>
+                               <div style="margin-top: 10px;">
+    ${canEdit() ? `
+        <button class="edit-btn" onclick="event.stopPropagation(); editPresentation(${pres.aircraftIndex}, ${pres.presentationIndex})">Edit</button>
+        ${canDelete() ? `<button class="archive-btn" onclick="event.stopPropagation(); deletePresentation(${pres.aircraftIndex}, ${pres.presentationIndex})">Delete</button>` : ''}
+        <button class="done-btn" onclick="event.stopPropagation(); completePresentation(${pres.aircraftIndex}, ${pres.presentationIndex})">Mark Done</button>
+    ` : ''}
+</div>
                             </div>
                         </div>
                     </div>
@@ -2340,11 +2342,13 @@ async function login() {
     ${pres.representative ? `<div><strong>Representative:</strong> ${pres.representative}</div>` : ''}
     ${pres.qubs ? `<div><strong>QLBs:</strong> ${pres.qubs}</div>` : ''}
     ${pres.remarks ? `<div><strong>Remarks:</strong> ${pres.remarks}</div>` : ''}
-    <div style="margin-top: 10px;">
+   <div style="margin-top: 10px;">
+    ${canEdit() ? `
         <button class="edit-btn" onclick="event.stopPropagation(); editPresentation(${pres.aircraftIndex}, ${pres.presentationIndex})">Edit</button>
-        <button class="archive-btn" onclick="event.stopPropagation(); deletePresentation(${pres.aircraftIndex}, ${pres.presentationIndex})">Delete</button>
+        ${canDelete() ? `<button class="archive-btn" onclick="event.stopPropagation(); deletePresentation(${pres.aircraftIndex}, ${pres.presentationIndex})">Delete</button>` : ''}
         <button class="done-btn" onclick="event.stopPropagation(); completePresentation(${pres.aircraftIndex}, ${pres.presentationIndex})">Mark Done</button>
-    </div>
+    ` : ''}
+</div>
 </div>
                         </div>
                     </div>
@@ -2985,6 +2989,7 @@ function updateMobileLayout() {
 </body>
 
 </html>
+
 
 
 
