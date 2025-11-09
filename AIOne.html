@@ -2244,11 +2244,13 @@ async function login() {
             ${pres.representative ? `<div><strong>Representative:</strong> ${pres.representative}</div>` : ''}
             ${pres.qubs ? `<div><strong>QLBs:</strong> ${pres.qubs}</div>` : ''}
             ${pres.remarks ? `<div><strong>Remarks:</strong> ${pres.remarks}</div>` : ''}
-            <div style="margin-top: 10px;">
-                <button class="edit-btn" onclick="event.stopPropagation(); editPresentation(${pres.aircraftIndex}, ${pres.presentationIndex})">Edit</button>
-                <button class="archive-btn" onclick="event.stopPropagation(); deletePresentation(${pres.aircraftIndex}, ${pres.presentationIndex})">Delete</button>
-                <button class="done-btn" onclick="event.stopPropagation(); completePresentation(${pres.aircraftIndex}, ${pres.presentationIndex})">Mark Done</button>
-            </div>
+           <div style="margin-top: 10px;">
+    ${canEdit() ? `
+        <button class="edit-btn" onclick="event.stopPropagation(); editPresentation(${pres.aircraftIndex}, ${pres.presentationIndex})">Edit</button>
+        ${canDelete() ? `<button class="archive-btn" onclick="event.stopPropagation(); deletePresentation(${pres.aircraftIndex}, ${pres.presentationIndex})">Delete</button>` : ''}
+        <button class="done-btn" onclick="event.stopPropagation(); completePresentation(${pres.aircraftIndex}, ${pres.presentationIndex})">Mark Done</button>
+    ` : ''}
+</div>
         </div>
                             
                             <div class="presentation-details-full">
@@ -2670,6 +2672,10 @@ function updateMobileLayout() {
 
         // Edit presentation
         function editPresentation(aircraftIndex, presentationIndex) {
+             if (!canEdit()) {
+        alert('You do not have permission to edit presentations');
+        return;
+            }
             const pres = aircraft[aircraftIndex].presentations[presentationIndex];
             
             document.getElementById('presentation-modal-title').textContent = 'Edit Presentation';
@@ -2710,6 +2716,10 @@ function updateMobileLayout() {
 
         // Delete presentation
         function deletePresentation(aircraftIndex, presentationIndex) {
+            if (!canDelete()) {
+        alert('You do not have permission to delete presentations');
+        return;
+    }
             if (confirm('Are you sure you want to delete this presentation?')) {
                 aircraft[aircraftIndex].presentations.splice(presentationIndex, 1);
                 saveData();
@@ -2725,6 +2735,10 @@ function updateMobileLayout() {
 
         // Complete presentation
         function completePresentation(aircraftIndex, presentationIndex) {
+            if (!canEdit()) {
+        alert('You do not have permission to complete presentations');
+        return;
+    }
             aircraft[aircraftIndex].presentations[presentationIndex].status = 'completed';
             saveData();
             updateDashboard();
@@ -2971,6 +2985,7 @@ function updateMobileLayout() {
 </body>
 
 </html>
+
 
 
 
