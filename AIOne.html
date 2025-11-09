@@ -3042,31 +3042,59 @@ function updateMobileLayout() {
         }
 
         // Add representative - WITH BACKEND SYNC
-async function addRepresentative() {
-  const nameInput = document.getElementById('new-representative-name');
-  const name = nameInput.value.trim();
-  
-  if (!name) {
-    alert('Please enter a representative name');
-    return;
-  }
-  
-  // If not logged in, use localStorage
-  if (!authToken) {
-    // Check for duplicates
-    if (representatives.some(rep => rep.toLowerCase() === name.toLowerCase())) {
-      alert('A representative with this name already exists!');
-      return;
-    }
-    
-    representatives.push(name);
-    localStorage.setItem('aione_representatives', JSON.stringify(representatives));
-    updateRepresentativesList();
-    
-    // Clear input
-    nameInput.value = '';
-    return;
-  }
+        // Add representative - WITH BACKEND SYNC
+        async function addRepresentative() {
+            const nameInput = document.getElementById('new-representative-name');
+            const name = nameInput.value.trim();
+            
+            if (!name) {
+                alert('Please enter a representative name');
+                return;
+            }
+            
+            // If not logged in, use localStorage
+            if (!authToken) {
+                // Check for duplicates
+                if (representatives.some(rep => rep.toLowerCase() === name.toLowerCase())) {
+                    alert('A representative with this name already exists!');
+                    return;
+                }
+                
+                representatives.push(name);
+                localStorage.setItem('aione_representatives', JSON.stringify(representatives));
+                updateRepresentativesList();
+                
+                // Clear input
+                nameInput.value = '';
+                return;
+            }
+            
+            // If logged in, use backend
+            try {
+                const response = await fetch(`${API_BASE}/representatives`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ name })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    representatives.push(data.data.name);
+                    updateRepresentativesList();
+                    
+                    // Clear input
+                    nameInput.value = '';
+                } else {
+                    const errorData = await response.json();
+                    alert('Error: ' + errorData.error);
+                }
+            } catch (error) {
+                alert('Failed to add representative: ' + error.message);
+            }
+        }
   
   // If logged in, use backend
   try {
@@ -3207,6 +3235,7 @@ async function addRepresentative() {
 </body>
 
 </html>
+
 
 
 
