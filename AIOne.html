@@ -2905,42 +2905,13 @@ function updateMobileLayout() {
         }
 
         // Import data
-        function importData(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const importedData = JSON.parse(e.target.result);
-                    
-                    if (confirm('This will replace all current data. Are you sure?')) {
-                        // NEW - saves to cloud database
-if (importedData.aircraft) {
-    // Save each aircraft to cloud database
-    for (const ac of importedData.aircraft) {
-        await saveAircraftToBackend(ac);
-    }
-}
-// Update local arrays
+        // OLD - saves to localStorage only
+if (importedData.aircraft) aircraft = importedData.aircraft;
 if (importedData.presentationTypes) presentationTypes = importedData.presentationTypes;
 if (importedData.representatives) representatives = importedData.representatives;
 
-// Save presentation types and reps to localStorage (they're not in cloud yet)
-saveData();
+saveData(); // This only saves to localStorage
 updateDashboard();
-                        updateMobileLayout();
-                        alert('Data imported successfully!');
-                    }
-                } catch (error) {
-                    alert('Error importing data: ' + error.message);
-                }
-            };
-            reader.readAsText(file);
-            
-            // Reset file input
-            event.target.value = '';
-        }
 
         // Clear all data
         function clearAllData() {
@@ -3003,6 +2974,7 @@ updateDashboard();
 </body>
 
 </html>
+
 
 
 
