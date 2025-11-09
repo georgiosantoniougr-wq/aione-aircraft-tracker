@@ -2915,12 +2915,20 @@ function updateMobileLayout() {
                     const importedData = JSON.parse(e.target.result);
                     
                     if (confirm('This will replace all current data. Are you sure?')) {
-                        if (importedData.aircraft) aircraft = importedData.aircraft;
-                        if (importedData.presentationTypes) presentationTypes = importedData.presentationTypes;
-                        if (importedData.representatives) representatives = importedData.representatives;
-                        
-                        saveData();
-                        updateDashboard();
+                        // NEW - saves to cloud database
+if (importedData.aircraft) {
+    // Save each aircraft to cloud database
+    for (const ac of importedData.aircraft) {
+        await saveAircraftToBackend(ac);
+    }
+}
+// Update local arrays
+if (importedData.presentationTypes) presentationTypes = importedData.presentationTypes;
+if (importedData.representatives) representatives = importedData.representatives;
+
+// Save presentation types and reps to localStorage (they're not in cloud yet)
+saveData();
+updateDashboard();
                         updateMobileLayout();
                         alert('Data imported successfully!');
                     }
@@ -2995,6 +3003,7 @@ function updateMobileLayout() {
 </body>
 
 </html>
+
 
 
 
