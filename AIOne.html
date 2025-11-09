@@ -1383,27 +1383,31 @@ async function login() {
 
         // Backend data loading
         async function loadAircraftFromBackend() {
-            try {
-                const response = await fetch(`${API_BASE}/aircraft`, {
-                    headers: {
-                        'Authorization': `Bearer ${authToken}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    aircraft = data.data || [];
-                    updateDashboard();
-                    updateMobileLayout();
-                } else {
-                    throw new Error('Failed to load from backend');
-                }
-            } catch (error) {
-                console.log('Using local data instead');
-                loadLocalData();
+    try {
+        const response = await fetch(`${API_BASE}/aircraft`, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json'
             }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            aircraft = data.data || [];
+            updateDashboard();
+            updateMobileLayout();
+        } else {
+            throw new Error('Failed to load from backend');
         }
+    } catch (error) {
+        console.log('Backend load failed:', error);
+        // DON'T fall back to localStorage - show error instead
+        alert('Cannot load data from server. Please check your connection.');
+        aircraft = []; // Start with empty array instead of local data
+        updateDashboard();
+        updateMobileLayout();
+    }
+}
 
         // ==================== YOUR ORIGINAL JAVASCRIPT ====================
         // Airline data
@@ -2989,6 +2993,7 @@ function updateMobileLayout() {
 </body>
 
 </html>
+
 
 
 
