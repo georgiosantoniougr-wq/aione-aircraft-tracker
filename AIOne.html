@@ -3414,6 +3414,17 @@ async function pushLocalDataToBackend() {
                 currentUser = JSON.parse(savedUser);
             }
             updateAuthUI();
+            // Initialize the app - FIXED: Safe initialization
+function initApp() {
+  // Initialize auth
+  const savedUser = localStorage.getItem('aione_user');
+  if (savedUser && authToken) {
+    currentUser = JSON.parse(savedUser);
+  }
+  updateAuthUI();
+  
+  // ADD THIS LINE - Force backend sync when logged in
+  if (authToken) loadAircraftFromBackend(); else loadLocalData();
 
             try {
                 // Ensure all aircraft have presentations array
@@ -3446,5 +3457,6 @@ async function pushLocalDataToBackend() {
     </script>
 </body>
 </html>
+
 
 
