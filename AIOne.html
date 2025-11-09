@@ -1085,6 +1085,7 @@
                 </div>
                 <div class="filter-group">
                     <button class="clear-data-btn" onclick="clearAllData()">Clear All Data</button>
+                    <button class="import-btn" onclick="pushLocalDataToBackend()" style="background: #e67e22;">Sync Local Data to Cloud</button>
                 </div>
                 <div class="filter-group">
     <button class="import-btn" onclick="pushLocalDataToBackend()" style="background: #e67e22;">Sync Local Data to Cloud</button>
@@ -3199,6 +3200,98 @@ async function pushLocalDataToBackend() {
     
     if (confirm('This will push all your local data to the cloud. Continue?')) {
         try {
+            alert('Starting sync process... This may take a moment.');
+            
+            // 1. Sync presentation types
+            if (presentationTypes && presentationTypes.length > 0) {
+                const existingTypesResponse = await fetch(`${API_BASE}/presentation-types`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (existingTypesResponse.ok) {
+                    const existingTypes = await existingTypesResponse.json();
+                    for (const type of existingTypes.data || []) {
+                        await fetch(`${API_BASE}/presentation-types/${type.id}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'Authorization': `Bearer ${authToken}`,
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                    }
+                }
+                
+                for (const type of presentationTypes) {
+                    await fetch(`${API_BASE}/presentation-types`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${authToken}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            name: type.name,
+                            duration: type.duration
+                        })
+                    });
+                }
+            }
+            
+            // 2. Sync representatives
+            if (representatives && representatives.length > 0) {
+                const existingRepsResponse = await fetch(`${API_BASE}/representatives`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (existingRepsResponse.ok) {
+                    const existingReps = await existingRepsResponse.json();
+                    for (const rep of existingReps.data || []) {
+                        await fetch(`${API_BASE}/representatives/${rep.id}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'Authorization': `Bearer ${authToken}`,
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                    }
+                }
+                
+                for (const repName of representatives) {
+                    await fetch(`${API_BASE}/representatives`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${authToken}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            name: repName
+                        })
+                    });
+                }
+            }
+            
+            await loadAircraftFromBackend();
+            alert('Sync completed successfully! All local data has been pushed to the cloud.');
+            
+        } catch (error) {
+            alert('Error syncing data to cloud: ' + error.message);
+        }
+    }
+}
+        // NEW: Push existing local data to backend (for manual sync)
+async function pushLocalDataToBackend() {
+    if (!authToken) {
+        alert('Please log in first to sync data to cloud');
+        return;
+    }
+    
+    if (confirm('This will push all your local data to the cloud. Continue?')) {
+        try {
             // Show loading message
             alert('Starting sync process... This may take a moment.');
             
@@ -3353,4 +3446,5 @@ async function pushLocalDataToBackend() {
     </script>
 </body>
 </html>
+
 
