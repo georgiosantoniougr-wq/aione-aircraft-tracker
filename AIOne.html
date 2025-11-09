@@ -913,7 +913,7 @@
                 <span id="auth-user" style="margin-left: 10px;"></span>
             </div>
             <div class="auth-buttons">
-                <button id="login-btn" class="auth-btn" onclick="showLoginForm()">Login</button>
+                 <button id="login-btn" class="auth-btn">Login</button>
                 <button id="logout-btn" class="auth-btn" onclick="logout()" style="display: none;">Logout</button>
             </div>
         </div>
@@ -1364,6 +1364,21 @@ function canDelete() {
         function hideLoginForm() {
             const loginForm = document.getElementById('login-form');
             if (loginForm) loginForm.style.display = 'none';
+        }
+                // Initialize event listeners when page loads
+        function initEventListeners() {
+            const loginBtn = document.getElementById('login-btn');
+            const logoutBtn = document.getElementById('logout-btn');
+            
+            if (loginBtn) {
+                loginBtn.addEventListener('click', showLoginForm);
+                console.log('Login event listener added');
+            }
+            
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', logout);
+                console.log('Logout event listener added');
+            }
         }
 
     function updateAuthUI() {
@@ -3221,6 +3236,10 @@ function updateMobileLayout() {
                 window.addEventListener('resize', updateMobileLayout);
                 
                 console.log('AIOne Aircraft Tracker initialized successfully');
+
+                                
+                // Initialize event listeners
+                initEventListeners();
             } catch (error) {
                 console.error('Initialization error:', error);
                 alert('Error initializing application: ' + error.message);
@@ -3232,6 +3251,7 @@ function updateMobileLayout() {
 </body>
 
 </html>
+
 
 
 
