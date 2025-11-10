@@ -1714,6 +1714,7 @@ let aircraft = [];
                                     `<button class="archive-btn" onclick="toggleArchive(${actualIndex})">Archive</button>`
                                 }
                                 <button onclick="showPresentationForm(${actualIndex})">Add Presentation</button>
+                                ${canDelete() ? `<button class="clear-filters" onclick="deleteAircraft(${actualIndex})" style="background: #e74c3c;">Delete</button>` : ''}
                             ` : ''}
                         </td>
                     </tr>
@@ -2626,6 +2627,33 @@ function updateMobileStats() {
             updateMobileLayout();
         }
 
+        // Delete aircraft
+async function deleteAircraft(index) {
+    if (!confirm('Are you sure you want to permanently delete this aircraft?')) {
+        return;
+    }
+    
+    try {
+        const aircraftId = aircraft[index].id;
+        const response = await fetch(`${API_BASE}/aircraft/${aircraftId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            // Reload from backend after deletion
+            await loadAircraftFromBackend();
+        } else {
+            throw new Error('Delete failed');
+        }
+    } catch (error) {
+        alert('Failed to delete aircraft: ' + error.message);
+    }
+}
+
         // Show presentation form - FILTER OUT COMPLETED FULL PRESENTATIONS - WITH AUTH CHECK
         function showPresentationForm(aircraftIndex) {
             // AUTH CHECK - Block if not logged in
@@ -3117,6 +3145,7 @@ async function initApp() {
     </script>
 </body>
 </html>
+
 
 
 
