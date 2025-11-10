@@ -2567,7 +2567,8 @@ function saveData() {
             });
             
             fullFleetContainer.innerHTML = fullFleetHtml;
-            fullFleetCounter.textContent = `Total: ${fullFleetAircraft.length} aircraft`;
+            const activeFleetCount = fullFleetAircraft.filter(ac => ac.status !== 'Archived').length;
+fullFleetCounter.textContent = `Total: ${activeFleetCount} active aircraft`;
         }
 
         // Show aircraft detail in mobile view
@@ -2575,34 +2576,39 @@ function saveData() {
             showAircraftDetail(index);
         }
 
-        // Update mobile stats
-        function updateMobileStats() {
-            const aircraftCount = document.getElementById('mobile-aircraft-count');
-            const presentationsCount = document.getElementById('mobile-presentations-count');
-            const conflictsCount = document.getElementById('mobile-conflicts-count');
-            
-            if (aircraftCount) aircraftCount.textContent = aircraft.length;
-            
-            // Count upcoming presentations
-            let upcomingCount = 0;
-            let conflictCount = 0;
-            
-            aircraft.forEach(ac => {
-                if (ac.presentations && ac.presentations.length > 0) {
-                    ac.presentations.forEach(pres => {
-                        if (pres.status !== 'completed') {
-                            upcomingCount++;
-                            if (checkPresentationConflict({...pres, msn: ac.msn})) {
-                                conflictCount++;
-                            }
-                        }
-                    });
+        // Update mobile stats - FIXED: Only count active aircraft
+function updateMobileStats() {
+    const aircraftCount = document.getElementById('mobile-aircraft-count');
+    const presentationsCount = document.getElementById('mobile-presentations-count');
+    const conflictsCount = document.getElementById('mobile-conflicts-count');
+    
+    // COUNT ONLY ACTIVE AIRCRAFT (non-archived)
+    const activeAircraftCount = aircraft.filter(ac => ac.status !== 'Archived').length;
+    if (aircraftCount) aircraftCount.textContent = activeAircraftCount;
+    
+    // Count upcoming presentations (only from active aircraft)
+    let upcomingCount = 0;
+    let conflictCount = 0;
+    
+    aircraft.forEach(ac => {
+        // Skip archived aircraft for presentation counts
+        if (ac.status === 'Archived') return;
+        
+        if (ac.presentations && ac.presentations.length > 0) {
+            ac.presentations.forEach(pres => {
+                if (pres.status !== 'completed') {
+                    upcomingCount++;
+                    if (checkPresentationConflict({...pres, msn: ac.msn})) {
+                        conflictCount++;
+                    }
                 }
             });
-            
-            if (presentationsCount) presentationsCount.textContent = upcomingCount;
-            if (conflictsCount) conflictsCount.textContent = conflictCount;
         }
+    });
+    
+    if (presentationsCount) presentationsCount.textContent = upcomingCount;
+    if (conflictsCount) conflictsCount.textContent = conflictCount;
+}
 
         // Toggle archive status
         function toggleArchive(index) {
@@ -3103,6 +3109,7 @@ async function initApp() {
     </script>
 </body>
 </html>
+
 
 
 
