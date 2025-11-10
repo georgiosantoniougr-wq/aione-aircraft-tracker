@@ -1290,13 +1290,17 @@
         let currentUser = null;
         
         // ==================== ROLE PERMISSIONS ====================
-        function canEdit() {
-            return currentUser && (currentUser.role === 'admin' || currentUser.role === 'manager');
-        }
+       function canEdit() {
+    if (!currentUser) return false;
+    console.log('User role for edit check:', currentUser.role);
+    return currentUser.role === 'admin' || currentUser.role === 'manager';
+}
 
         function canDelete() {
-            return currentUser && currentUser.role === 'admin';
-        }
+    if (!currentUser) return false;
+    console.log('User role for delete check:', currentUser.role);
+    return currentUser.role === 'admin';
+}
 
         // NEW: Presentations expansion state
         let presentationsExpanded = false;
@@ -3109,6 +3113,7 @@ async function initApp() {
     </script>
 </body>
 </html>
+
 
 
 
