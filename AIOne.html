@@ -1848,65 +1848,89 @@ let aircraft = [];
             }
         });
 
-        // Aircraft form submission
-        document.getElementById('aircraft-form').addEventListener('submit', function(e) {
-            e.preventDefault();
+      // Aircraft form submission - FIXED TO USE BACKEND
+document.getElementById('aircraft-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const editIndex = document.getElementById('edit-index').value;
+    const msn = document.getElementById('msn').value.toUpperCase();
+    const aircraftType = document.getElementById('aircraft-type').value.toUpperCase();
+    const owner = document.getElementById('owner').value.toUpperCase();
+    const operator = document.getElementById('operator').value.toUpperCase();
+    const registration = document.getElementById('registration').value.toUpperCase();
+    const deliveryDate = document.getElementById('delivery-date').value;
+    const status = document.getElementById('status').value;
+    const enginesType = document.getElementById('engines-type').value.toUpperCase();
+    const eng1Sn = document.getElementById('eng1-sn').value.toUpperCase();
+    const eng2Sn = document.getElementById('eng2-sn').value.toUpperCase();
+    const apuType = document.getElementById('apu-type').value.toUpperCase();
+    const apuSn = document.getElementById('apu-sn').value.toUpperCase();
+    const concessionsC = parseInt(document.getElementById('concessions-c').value) || 0;
+    const concessionsR = parseInt(document.getElementById('concessions-r').value) || 0;
+    const remarks = document.getElementById('aircraft-remarks').value;
+    
+    // Check for duplicate MSN (except when editing the same aircraft)
+    if (editIndex === '' && aircraft.some(ac => ac.msn === msn)) {
+        alert('An aircraft with this MSN already exists!');
+        return;
+    }
+    
+    const aircraftData = {
+        msn: msn,
+        aircraftType: aircraftType,
+        owner: owner,
+        operator: operator,
+        registration: registration,
+        deliveryDate: deliveryDate,
+        status: status,
+        enginesType: enginesType,
+        eng1Sn: eng1Sn,
+        eng2Sn: eng2Sn,
+        apuType: apuType,
+        apuSn: apuSn,
+        concessionsC: concessionsC,
+        concessionsR: concessionsR,
+        remarks: remarks,
+        presentations: editIndex !== '' ? aircraft[editIndex].presentations : []
+    };
+    
+    try {
+        if (editIndex !== '') {
+            // UPDATE existing aircraft in backend
+            const aircraftId = aircraft[editIndex].id; // Get the database ID
+            const response = await fetch(`${API_BASE}/aircraft/${aircraftId}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${authToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(aircraftData)
+            });
             
-            const editIndex = document.getElementById('edit-index').value;
-            const msn = document.getElementById('msn').value.toUpperCase();
-            const aircraftType = document.getElementById('aircraft-type').value.toUpperCase();
-            const owner = document.getElementById('owner').value.toUpperCase();
-            const operator = document.getElementById('operator').value.toUpperCase();
-            const registration = document.getElementById('registration').value.toUpperCase();
-            const deliveryDate = document.getElementById('delivery-date').value;
-            const status = document.getElementById('status').value;
-            const enginesType = document.getElementById('engines-type').value.toUpperCase();
-            const eng1Sn = document.getElementById('eng1-sn').value.toUpperCase();
-            const eng2Sn = document.getElementById('eng2-sn').value.toUpperCase();
-            const apuType = document.getElementById('apu-type').value.toUpperCase();
-            const apuSn = document.getElementById('apu-sn').value.toUpperCase();
-            const concessionsC = parseInt(document.getElementById('concessions-c').value) || 0;
-            const concessionsR = parseInt(document.getElementById('concessions-r').value) || 0;
-            const remarks = document.getElementById('aircraft-remarks').value;
+            if (!response.ok) throw new Error('Update failed');
+        } else {
+            // CREATE new aircraft in backend
+            const response = await fetch(`${API_BASE}/aircraft`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${authToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(aircraftData)
+            });
             
-            // Check for duplicate MSN (except when editing the same aircraft)
-            if (editIndex === '' && aircraft.some(ac => ac.msn === msn)) {
-                alert('An aircraft with this MSN already exists!');
-                return;
-            }
-            
-            const aircraftData = {
-                msn,
-                aircraftType,
-                owner,
-                operator,
-                registration,
-                deliveryDate,
-                status,
-                enginesType,
-                eng1Sn,
-                eng2Sn,
-                apuType,
-                apuSn,
-                concessionsC,
-                concessionsR,
-                remarks,
-                presentations: editIndex !== '' ? aircraft[editIndex].presentations : []
-            };
-            
-            if (editIndex !== '') {
-                // Update existing aircraft
-                aircraft[editIndex] = aircraftData;
-            } else {
-                // Add new aircraft
-                aircraft.push(aircraftData);
-            }
-            
-            saveData();
-            updateDashboard();
-            updateMobileLayout();
-            hideModal();
-        });
+            if (!response.ok) throw new Error('Create failed');
+        }
+        
+        // Reload from backend after saving
+        await loadAircraftFromBackend();
+        hideModal();
+        
+    } catch (error) {
+        alert('Failed to save aircraft: ' + error.message);
+        console.error('Save error:', error);
+    }
+});
 
         // Show aircraft details
         function showAircraftDetail(index) {
@@ -2192,12 +2216,10 @@ let aircraft = [];
             }
         }
 
-        // Save data to localStorage
-        function saveData() {
-            localStorage.setItem('aione_aircraft', JSON.stringify(aircraft));
-            localStorage.setItem('aione_presentation_types', JSON.stringify(presentationTypes));
-            localStorage.setItem('aione_representatives', JSON.stringify(representatives));
-        }
+       // Save data - DO NOTHING (we use backend now)
+function saveData() {
+    console.log('Using backend - no local storage save needed');
+}
 
         // Update presentation master list - SORTED BY NAME
         function updatePresentationMasterList() {
@@ -3079,4 +3101,5 @@ let aircraft = [];
     </script>
 </body>
 </html>
+
 
