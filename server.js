@@ -320,20 +320,39 @@ app.put('/api/aircraft/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// Delete aircraft
+// Delete aircraft - DEBUG VERSION
 app.delete('/api/aircraft/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
+    console.log('🔍 BACKEND DELETE: User', req.user.user_id, 'deleting aircraft ID:', id);
+
+    // First, check what aircraft exist for this user
+    const { data: userAircraft, error: listError } = await supabase
+      .from('aircraft')
+      .select('id, msn, user_id')
+      .eq('user_id', req.user.user_id);
+
+    if (listError) {
+      console.log('❌ BACKEND DELETE: Error listing aircraft:', listError);
+      throw listError;
+    }
+
+    console.log('🔍 BACKEND DELETE: User aircraft:', userAircraft);
+    console.log('🔍 BACKEND DELETE: Looking for ID:', id);
 
     // Verify aircraft belongs to user
     const { data: existing, error: checkError } = await supabase
       .from('aircraft')
-      .select('id')
+      .select('id, msn, user_id')
       .eq('id', id)
       .eq('user_id', req.user.user_id)
       .single();
 
+    console.log('🔍 BACKEND DELETE: Found aircraft:', existing);
+    console.log('🔍 BACKEND DELETE: Check error:', checkError);
+
     if (checkError || !existing) {
+      console.log('❌ BACKEND DELETE: Aircraft not found or access denied');
       return res.status(404).json({ error: 'Aircraft not found' });
     }
 
@@ -342,12 +361,16 @@ app.delete('/api/aircraft/:id', authenticateToken, async (req, res) => {
       .delete()
       .eq('id', id);
 
-    if (error) throw error;
+    if (error) {
+      console.log('❌ BACKEND DELETE: Database delete error:', error);
+      throw error;
+    }
 
+    console.log('✅ BACKEND DELETE: Successfully deleted aircraft ID:', id);
     res.json({ message: 'Aircraft deleted successfully' });
 
   } catch (error) {
-    console.error('Delete aircraft error:', error);
+    console.error('❌ BACKEND DELETE: Error:', error);
     res.status(500).json({ error: 'Failed to delete aircraft' });
   }
 });
@@ -537,6 +560,7 @@ app.listen(PORT, async () => {
 }).on('error', (err) => {
   console.error('❌ Server failed to start:', err);
 });
+
 
 
 
