@@ -176,7 +176,6 @@ app.post('/api/auth/login', async (req, res) => {
 
 // Get all aircraft for authenticated user
 app.get('/api/aircraft', authenticateToken, async (req, res) => {
-  // Temporary: Add a mock user for testing
   try {
     const { data, error } = await supabase
       .from('aircraft')
@@ -186,9 +185,29 @@ app.get('/api/aircraft', authenticateToken, async (req, res) => {
 
     if (error) throw error;
 
+    // Map database fields to frontend expected fields
+    const mappedData = (data || []).map(aircraft => ({
+      msn: aircraft.msn,
+      aircraftType: aircraft.aircraft_type,
+      owner: aircraft.owner,
+      operator: aircraft.operator,
+      registration: aircraft.registration,
+      deliveryDate: aircraft.delivery_date,
+      status: aircraft.status,
+      enginesType: aircraft.engines_type,
+      eng1Sn: aircraft.eng1_sn,
+      eng2Sn: aircraft.eng2_sn,
+      apuType: aircraft.apu_type,
+      apuSn: aircraft.apu_sn,
+      concessionsC: aircraft.concessions_c,
+      concessionsR: aircraft.concessions_r,
+      remarks: aircraft.remarks,
+      presentations: aircraft.presentations || []
+    }));
+
     res.json({
       message: 'Aircraft data retrieved successfully',
-      data: data || []
+      data: mappedData
     });
 
   } catch (error) {
@@ -207,7 +226,21 @@ app.get('/api/aircraft', authenticateToken, async (req, res) => {
 app.post('/api/aircraft', authenticateToken, async (req, res) => {
   try {
     const aircraftData = {
-      ...req.body,
+      msn: req.body.msn,
+      aircraft_type: req.body.aircraftType,
+      owner: req.body.owner,
+      operator: req.body.operator,
+      registration: req.body.registration,
+      delivery_date: req.body.deliveryDate,
+      status: req.body.status,
+      engines_type: req.body.enginesType,
+      eng1_sn: req.body.eng1Sn,
+      eng2_sn: req.body.eng2Sn,
+      apu_type: req.body.apuType,
+      apu_sn: req.body.apuSn,
+      concessions_c: req.body.concessionsC,
+      concessions_r: req.body.concessionsR,
+      remarks: req.body.remarks,
       user_id: req.user.user_id
     };
 
@@ -238,7 +271,23 @@ app.post('/api/aircraft', authenticateToken, async (req, res) => {
 app.put('/api/aircraft/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const aircraftData = req.body;
+    const aircraftData = {
+      msn: req.body.msn,
+      aircraft_type: req.body.aircraftType,
+      owner: req.body.owner,
+      operator: req.body.operator,
+      registration: req.body.registration,
+      delivery_date: req.body.deliveryDate,
+      status: req.body.status,
+      engines_type: req.body.enginesType,
+      eng1_sn: req.body.eng1Sn,
+      eng2_sn: req.body.eng2Sn,
+      apu_type: req.body.apuType,
+      apu_sn: req.body.apuSn,
+      concessions_c: req.body.concessionsC,
+      concessions_r: req.body.concessionsR,
+      remarks: req.body.remarks
+    };
 
     // Verify aircraft belongs to user
     const { data: existing, error: checkError } = await supabase
@@ -488,5 +537,6 @@ app.listen(PORT, async () => {
 }).on('error', (err) => {
   console.error('❌ Server failed to start:', err);
 });
+
 
 
