@@ -1456,38 +1456,39 @@ let aircraft = [];
 
         // ==================== BACKEND DATA LOADING ====================
         async function loadAircraftFromBackend() {
-            try {
-                const response = await fetch(`${API_BASE}/aircraft`, {
-                    headers: {
-                        'Authorization': `Bearer ${authToken}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    aircraft = data.data || [];
-                    
-                    // ALSO load presentations and representatives from backend
-                    await loadPresentationTypes();
-                    await loadRepresentatives();
-                    
-                    updateDashboard();
-                    updateMobileLayout();
-                } else {
-                    throw new Error('Failed to load from backend');
-                }
-            } catch (error) {
-                console.log('Backend load failed:', error);
-                // Load from localStorage as fallback
-                aircraft = JSON.parse(localStorage.getItem('aione_aircraft')) || [];
-                presentationTypes = JSON.parse(localStorage.getItem('aione_presentation_types')) || defaultPresentationTypes;
-                representatives = JSON.parse(localStorage.getItem('aione_representatives')) || ["John Smith", "Maria Garcia", "David Chen"];
-                
-                updateDashboard();
-                updateMobileLayout();
+    try {
+        const response = await fetch(`${API_BASE}/aircraft`, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json'
             }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            aircraft = data.data || [];
+            
+            // ALSO load presentations and representatives from backend
+            await loadPresentationTypes();
+            await loadRepresentatives();
+            
+            updateDashboard();
+            updateMobileLayout();
+            console.log('Successfully loaded from backend:', aircraft.length, 'aircraft');
+        } else {
+            throw new Error('Failed to load from backend');
         }
+    } catch (error) {
+        console.log('Backend load failed:', error);
+        // FALLBACK: Use empty array instead of localStorage
+        aircraft = [];
+        await loadPresentationTypes();
+        await loadRepresentatives();
+        
+        updateDashboard();
+        updateMobileLayout();
+    }
+}
 
         // NEW: Load presentation types from backend
         async function loadPresentationTypes() {
@@ -3061,45 +3062,47 @@ function saveData() {
             updateMobileLayout();
         }
 
-        // Initialize the app - FIXED: Safe initialization
-        function initApp() {
-            // Initialize auth
-            const savedUser = localStorage.getItem('aione_user');
-            if (savedUser && authToken) {
-                currentUser = JSON.parse(savedUser);
-            }
-            updateAuthUI();
+        // Initialize the app - FIXED: Always load from backend
+async function initApp() {
+    // Initialize auth
+    const savedUser = localStorage.getItem('aione_user');
+    if (savedUser && authToken) {
+        currentUser = JSON.parse(savedUser);
+    }
+    updateAuthUI();
 
-            try {
-                // Ensure all aircraft have presentations array
-                aircraft.forEach(ac => {
-                    if (!ac.presentations || !Array.isArray(ac.presentations)) {
-                        ac.presentations = [];
-                    }
-                });
-                
-                updateFilterOptions();
-                updateMobileLayout();
-                updateDashboard();
-                updatePresentationMasterList();
-                updateMobileStats();
-                updateDeliveriesTab(); // Initialize the deliveries tab
-                
-                window.addEventListener('resize', updateMobileLayout);
-                
-                console.log('AIOne Aircraft Tracker initialized successfully');
-                
-                // Initialize event listeners
-                initEventListeners();
-            } catch (error) {
-                console.error('Initialization error:', error);
-                alert('Error initializing application: ' + error.message);
-            }
+    try {
+        // LOAD FROM BACKEND IF LOGGED IN
+        if (authToken) {
+            await loadAircraftFromBackend();
+        } else {
+            // If not logged in, start with empty array
+            aircraft = [];
         }
+        
+        updateFilterOptions();
+        updateMobileLayout();
+        updateDashboard();
+        updatePresentationMasterList();
+        updateMobileStats();
+        updateDeliveriesTab();
+        
+        window.addEventListener('resize', updateMobileLayout);
+        
+        console.log('AIOne Aircraft Tracker initialized successfully');
+        
+        // Initialize event listeners
+        initEventListeners();
+    } catch (error) {
+        console.error('Initialization error:', error);
+        alert('Error initializing application: ' + error.message);
+    }
+}
 
         window.onload = initApp;
     </script>
 </body>
 </html>
+
 
 
