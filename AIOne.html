@@ -1387,6 +1387,10 @@
         }
 
         function updateAuthUI() {
+            // FIX: Ensure currentUser is always set from localStorage
+    if (!currentUser && localStorage.getItem('aione_user')) {
+        currentUser = JSON.parse(localStorage.getItem('aione_user'));
+    }
             const authStatus = document.getElementById('auth-status');
             const authUser = document.getElementById('auth-user');
             const loginBtn = document.getElementById('login-btn');
@@ -3074,13 +3078,13 @@ function updateMobileStats() {
 
         // Initialize the app - FIXED: Always load from backend
 async function initApp() {
-    // Initialize auth
+    // Initialize auth - FIXED
     const savedUser = localStorage.getItem('aione_user');
     if (savedUser && authToken) {
         currentUser = JSON.parse(savedUser);
+        console.log('User loaded:', currentUser); // Debug line
     }
     updateAuthUI();
-
     try {
         // LOAD FROM BACKEND IF LOGGED IN
         if (authToken) {
@@ -3113,6 +3117,7 @@ async function initApp() {
     </script>
 </body>
 </html>
+
 
 
 
