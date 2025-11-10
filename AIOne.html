@@ -1428,63 +1428,8 @@
 
         const airlineCodes = Object.keys(airlineData);
         
-        // Load aircraft data - FIXED: Ensure presentations is always an array
-        let aircraft = JSON.parse(localStorage.getItem('aione_aircraft')) || [
-            {
-                "msn": "12826",
-                "aircraftType": "A320neo",
-                "owner": "G8E",
-                "operator": "CHH",
-                "registration": "",
-                "deliveryDate": "2025-10-30",
-                "status": "FAL",
-                "enginesType": "",
-                "eng1Sn": "",
-                "eng2Sn": "",
-                "apuType": "",
-                "apuSn": "",
-                "concessionsC": 0,
-                "concessionsR": 0,
-                "remarks": "",
-                "presentations": []
-            },
-            {
-                "msn": "12802",
-                "aircraftType": "A321neo",
-                "owner": "I2L",
-                "operator": "ETD",
-                "registration": "",
-                "deliveryDate": "2025-10-31",
-                "status": "FAL",
-                "enginesType": "LEAP",
-                "eng1Sn": "1",
-                "eng2Sn": "2",
-                "apuType": "WWQ",
-                "apuSn": "3",
-                "concessionsC": 40,
-                "concessionsR": 1,
-                "remarks": "High concessions - needs attention",
-                "presentations": []
-            },
-            {
-                "msn": "12791",
-                "aircraftType": "A320neo",
-                "owner": "I2L",
-                "operator": "ETD",
-                "registration": "",
-                "deliveryDate": "2025-11-28",
-                "status": "FAL",
-                "enginesType": "LEAP",
-                "eng1Sn": "",
-                "eng2Sn": "",
-                "apuType": "",
-                "apuSn": "",
-                "concessionsC": 0,
-                "concessionsR": 0,
-                "remarks": "",
-                "presentations": []
-            }
-        ];
+     // Load aircraft data - START EMPTY
+let aircraft = [];
         
         // FIXED: Ensure all aircraft have presentations array
         aircraft.forEach(ac => {
@@ -3134,3 +3079,4 @@
     </script>
 </body>
 </html>
+
