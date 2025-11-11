@@ -1476,6 +1476,13 @@ let aircraft = [];
             const data = await response.json();
             aircraft = data.data || [];
             
+            // DEBUG: Check if aircraft have IDs
+            console.log('🔄 LOAD DEBUG: Loaded aircraft with IDs:', aircraft.map(ac => ({
+                msn: ac.msn,
+                id: ac.id,
+                hasId: !!ac.id
+            })));
+            
             // ALSO load presentations and representatives from backend
             await loadPresentationTypes();
             await loadRepresentatives();
@@ -3175,6 +3182,7 @@ async function initApp() {
     </script>
 </body>
 </html>
+
 
 
 
