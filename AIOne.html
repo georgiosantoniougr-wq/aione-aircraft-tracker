@@ -1472,19 +1472,23 @@ let aircraft = [];
             // Keep the raw backend data including IDs
 aircraft = data.data || [];
 
-// DEBUG: Check if aircraft have IDs
-console.log('🔄 AIRCRAFT LOADED:', aircraft.map(ac => ({
-    msn: ac.msn, 
-    id: ac.id,
-    hasId: !!ac.id
-})));
+// DEBUG: Check if aircraft have IDs - SHOW FULL DETAILS
+console.log('🔄 AIRCRAFT LOADED - FULL DETAILS:');
+aircraft.forEach((ac, index) => {
+    console.log(`  Aircraft ${index}:`, {
+        msn: ac.msn,
+        id: ac.id,
+        hasId: !!ac.id,
+        ALL_FIELDS: ac  // This shows EVERYTHING
+    });
+});
             
-            // DEBUG: Check if aircraft have IDs
-            console.log('🔄 LOAD DEBUG: Loaded aircraft with IDs:', aircraft.map(ac => ({
-                msn: ac.msn,
-                id: ac.id,
-                hasId: !!ac.id
-            })));
+          // DEBUG: Check ALL fields from backend
+console.log('🔍 RAW BACKEND FIELDS for first aircraft:');
+if (aircraft.length > 0) {
+    console.log('All keys:', Object.keys(aircraft[0]));
+    console.log('Full object:', aircraft[0]);
+}
             
             // ALSO load presentations and representatives from backend
             await loadPresentationTypes();
@@ -3200,6 +3204,7 @@ async function initApp() {
     </script>
 </body>
 </html>
+
 
 
 
