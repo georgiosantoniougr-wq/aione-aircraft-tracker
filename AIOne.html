@@ -1438,13 +1438,8 @@
         
      // Load aircraft data - START EMPTY
 let aircraft = [];
-        
-        // FIXED: Ensure all aircraft have presentations array
-        aircraft.forEach(ac => {
-            if (!ac.presentations || !Array.isArray(ac.presentations)) {
-                ac.presentations = [];
-            }
-        });
+
+// Presentations array check will be done AFTER data is loaded
         
         let currentSort = { field: 'msn', direction: 'asc' };
         let currentFilters = { owner: '', operator: '', status: '' };
@@ -3205,6 +3200,7 @@ async function initApp() {
     </script>
 </body>
 </html>
+
 
 
 
