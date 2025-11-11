@@ -187,6 +187,7 @@ app.get('/api/aircraft', authenticateToken, async (req, res) => {
 
     // Map database fields to frontend expected fields
     const mappedData = (data || []).map(aircraft => ({
+      id: aircraft.id,
       msn: aircraft.msn,
       aircraftType: aircraft.aircraft_type,
       owner: aircraft.owner,
@@ -560,6 +561,7 @@ app.listen(PORT, async () => {
 }).on('error', (err) => {
   console.error('❌ Server failed to start:', err);
 });
+
 
 
 
