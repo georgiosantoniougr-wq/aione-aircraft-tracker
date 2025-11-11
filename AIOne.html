@@ -2533,20 +2533,28 @@ function saveData() {
             upcomingAircraft.forEach((ac, index) => {
                 const actualIndex = aircraft.findIndex(a => a.msn === ac.msn);
                 upcomingHtml += `
-                    <div class="mobile-aircraft-row" onclick="showAircraftDetailMobile(${actualIndex})">
-                        <div class="mobile-msn">${ac.msn}</div>
-                        <div class="mobile-codes">
-                            <div class="mobile-code">
-                                ${getMobileLogoElement(ac.owner).outerHTML}
-                                <span style="font-size: 10px;">${ac.owner}</span>
-                            </div>
-                            <div class="mobile-code">
-                                ${getMobileLogoElement(ac.operator).outerHTML}
-                                <span style="font-size: 10px;">${ac.operator}</span>
-                            </div>
-                        </div>
-                        <div class="mobile-delivery-date">${formatDateToDDMMYYYY(ac.deliveryDate)}</div>
-                    </div>
+                    <div class="mobile-aircraft-row">
+    <div class="mobile-msn" onclick="showAircraftDetailMobile(${actualIndex})">${ac.msn}</div>
+    <div class="mobile-codes" onclick="showAircraftDetailMobile(${actualIndex})">
+        <div class="mobile-code">
+            ${getMobileLogoElement(ac.owner).outerHTML}
+            <span style="font-size: 10px;">${ac.owner}</span>
+        </div>
+        <div class="mobile-code">
+            ${getMobileLogoElement(ac.operator).outerHTML}
+            <span style="font-size: 10px;">${ac.operator}</span>
+        </div>
+    </div>
+    <div class="mobile-delivery-date" onclick="showAircraftDetailMobile(${actualIndex})">
+        ${formatDateToDDMMYYYY(ac.deliveryDate)}
+    </div>
+    ${canDelete() ? `
+        <button class="clear-filters" onclick="deleteAircraft(${actualIndex})" 
+                style="background: #e74c3c; color: white; border: none; padding: 5px 8px; border-radius: 3px; font-size: 10px; margin-left: 5px;">
+            Delete
+        </button>
+    ` : ''}
+</div>
                 `;
             });
             
@@ -2558,20 +2566,28 @@ function saveData() {
             fullFleetAircraft.forEach((ac, index) => {
                 const actualIndex = aircraft.findIndex(a => a.msn === ac.msn);
                 fullFleetHtml += `
-                    <div class="mobile-aircraft-row" onclick="showAircraftDetailMobile(${actualIndex})">
-                        <div class="mobile-msn">${ac.msn}</div>
-                        <div class="mobile-codes">
-                            <div class="mobile-code">
-                                ${getMobileLogoElement(ac.owner).outerHTML}
-                                <span style="font-size: 10px;">${ac.owner}</span>
-                            </div>
-                            <div class="mobile-code">
-                                ${getMobileLogoElement(ac.operator).outerHTML}
-                                <span style="font-size: 10px;">${ac.operator}</span>
-                            </div>
-                        </div>
-                        <div class="mobile-delivery-date">${formatDateToDDMMYYYY(ac.deliveryDate)}</div>
-                    </div>
+                   <div class="mobile-aircraft-row">
+    <div class="mobile-msn" onclick="showAircraftDetailMobile(${actualIndex})">${ac.msn}</div>
+    <div class="mobile-codes" onclick="showAircraftDetailMobile(${actualIndex})">
+        <div class="mobile-code">
+            ${getMobileLogoElement(ac.owner).outerHTML}
+            <span style="font-size: 10px;">${ac.owner}</span>
+        </div>
+        <div class="mobile-code">
+            ${getMobileLogoElement(ac.operator).outerHTML}
+            <span style="font-size: 10px;">${ac.operator}</span>
+        </div>
+    </div>
+    <div class="mobile-delivery-date" onclick="showAircraftDetailMobile(${actualIndex})">
+        ${formatDateToDDMMYYYY(ac.deliveryDate)}
+    </div>
+    ${canDelete() ? `
+        <button class="clear-filters" onclick="deleteAircraft(${actualIndex})" 
+                style="background: #e74c3c; color: white; border: none; padding: 5px 8px; border-radius: 3px; font-size: 10px; margin-left: 5px;">
+            Delete
+        </button>
+    ` : ''}
+</div>
                 `;
             });
             
@@ -2627,58 +2643,40 @@ function updateMobileStats() {
             updateMobileLayout();
         }
 
-        // Delete aircraft - DEBUG VERSION
+        // FIXED: Delete aircraft - PROPER VERSION
 async function deleteAircraft(index) {
     if (!confirm('Are you sure you want to permanently delete this aircraft?')) {
         return;
     }
     
     try {
-        const aircraftMsn = aircraft[index].msn;
-        console.log('🔍 DELETE DEBUG: Starting deletion for MSN:', aircraftMsn);
+        // Get the aircraft object with its database ID
+        const aircraftToDelete = aircraft[index];
+        console.log('🔍 DELETE DEBUG: Aircraft to delete:', aircraftToDelete);
         
-        // Get aircraft list from backend
-        const response = await fetch(`${API_BASE}/aircraft`, {
-            headers: {'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json'}
-        });
-        
-        if (!response.ok) throw new Error(`Fetch failed: ${response.status}`);
-        
-        const backendData = await response.json();
-        console.log('🔍 DELETE DEBUG: Backend aircraft:', backendData.data);
-        
-        // Find the aircraft
-        const aircraftToDelete = backendData.data.find(ac => ac.msn === aircraftMsn);
-        
-        if (!aircraftToDelete) {
-            throw new Error(`Aircraft "${aircraftMsn}" not found in backend`);
+        if (!aircraftToDelete.id) {
+            throw new Error('Aircraft ID not found - please refresh the page and try again');
         }
         
-        console.log('🔍 DELETE DEBUG: Aircraft to delete:', aircraftToDelete);
-        console.log('🔍 DELETE DEBUG: Aircraft ID:', aircraftToDelete.id);
-        console.log('🔍 DELETE DEBUG: Delete URL:', `${API_BASE}/aircraft/${aircraftToDelete.id}`);
+        console.log('🔍 DELETE DEBUG: Deleting aircraft ID:', aircraftToDelete.id);
         
-        // Test if the route exists
-        const testResponse = await fetch(`${API_BASE}/aircraft/${aircraftToDelete.id}`, {
-            method: 'GET',
-            headers: {'Authorization': `Bearer ${authToken}`}
-        });
-        console.log('🔍 DELETE DEBUG: GET test response:', testResponse.status);
-        
-        // Now try to delete
+        // Delete from backend using the database ID
         const deleteResponse = await fetch(`${API_BASE}/aircraft/${aircraftToDelete.id}`, {
             method: 'DELETE',
-            headers: {'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json'}
+            headers: {
+                'Authorization': `Bearer ${authToken}`, 
+                'Content-Type': 'application/json'
+            }
         });
         
         console.log('🔍 DELETE DEBUG: DELETE response status:', deleteResponse.status);
         
         if (deleteResponse.ok) {
             console.log('✅ DELETE DEBUG: Successfully deleted');
-            await loadAircraftFromBackend();
+            await loadAircraftFromBackend(); // Reload from backend
         } else {
-            const errorText = await deleteResponse.text();
-            throw new Error(`DELETE failed: ${deleteResponse.status} - ${errorText}`);
+            const errorData = await deleteResponse.json();
+            throw new Error(`DELETE failed: ${deleteResponse.status} - ${errorData.error}`);
         }
         
     } catch (error) {
@@ -3177,6 +3175,7 @@ async function initApp() {
     </script>
 </body>
 </html>
+
 
 
 
