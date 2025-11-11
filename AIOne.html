@@ -1474,7 +1474,15 @@ let aircraft = [];
         
         if (response.ok) {
             const data = await response.json();
-            aircraft = data.data || [];
+            // Keep the raw backend data including IDs
+aircraft = data.data || [];
+
+// DEBUG: Check if aircraft have IDs
+console.log('🔄 AIRCRAFT LOADED:', aircraft.map(ac => ({
+    msn: ac.msn, 
+    id: ac.id,
+    hasId: !!ac.id
+})));
             
             // DEBUG: Check if aircraft have IDs
             console.log('🔄 LOAD DEBUG: Loaded aircraft with IDs:', aircraft.map(ac => ({
@@ -2650,25 +2658,40 @@ function updateMobileStats() {
             updateMobileLayout();
         }
 
-        // FIXED: Delete aircraft - PROPER VERSION
+        // FIXED: Delete aircraft - WITH BACKUP METHOD
 async function deleteAircraft(index) {
     if (!confirm('Are you sure you want to permanently delete this aircraft?')) {
         return;
     }
     
     try {
-        // Get the aircraft object with its database ID
         const aircraftToDelete = aircraft[index];
-        console.log('🔍 DELETE DEBUG: Aircraft to delete:', aircraftToDelete);
+        console.log('🔍 DELETE DEBUG: Aircraft object:', aircraftToDelete);
         
-        if (!aircraftToDelete.id) {
+        let aircraftId = aircraftToDelete.id;
+        
+        // BACKUP: If no ID, try to get it from backend
+        if (!aircraftId) {
+            console.log('🔄 BACKUP: No ID found, fetching from backend...');
+            const response = await fetch(`${API_BASE}/aircraft`, {
+                headers: {'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json'}
+            });
+            
+            if (response.ok) {
+                const backendData = await response.json();
+                const backendAircraft = backendData.data.find(ac => ac.msn === aircraftToDelete.msn);
+                aircraftId = backendAircraft?.id;
+                console.log('🔄 BACKUP: Found ID from backend:', aircraftId);
+            }
+        }
+        
+        if (!aircraftId) {
             throw new Error('Aircraft ID not found - please refresh the page and try again');
         }
         
-        console.log('🔍 DELETE DEBUG: Deleting aircraft ID:', aircraftToDelete.id);
+        console.log('🔍 DELETE DEBUG: Deleting aircraft ID:', aircraftId);
         
-        // Delete from backend using the database ID
-        const deleteResponse = await fetch(`${API_BASE}/aircraft/${aircraftToDelete.id}`, {
+        const deleteResponse = await fetch(`${API_BASE}/aircraft/${aircraftId}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${authToken}`, 
@@ -2680,7 +2703,7 @@ async function deleteAircraft(index) {
         
         if (deleteResponse.ok) {
             console.log('✅ DELETE DEBUG: Successfully deleted');
-            await loadAircraftFromBackend(); // Reload from backend
+            await loadAircraftFromBackend();
         } else {
             const errorData = await deleteResponse.json();
             throw new Error(`DELETE failed: ${deleteResponse.status} - ${errorData.error}`);
@@ -3182,6 +3205,7 @@ async function initApp() {
     </script>
 </body>
 </html>
+
 
 
 
