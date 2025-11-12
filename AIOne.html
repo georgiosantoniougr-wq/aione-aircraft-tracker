@@ -2776,13 +2776,13 @@ async function deleteAircraft(index) {
         }
 
         // Presentation form submission
-       document.getElementById('presentation-form').addEventListener('submit', async function(e) {
+      document.getElementById('presentation-form').addEventListener('submit', async function(e) {
     e.preventDefault();
     
     console.log('🔄 PRESENTATION SAVE STARTED...');
     
     try {
-        const aircraftIndex = document.getElementById('presentation-aircraft-index').value;
+        const aircraftIndex = parseInt(document.getElementById('presentation-aircraft-index').value);
         const editIndex = document.getElementById('presentation-edit-index').value;
         const type = document.getElementById('presentation-type').value;
         const datetime = document.getElementById('presentation-datetime').value;
@@ -2791,6 +2791,13 @@ async function deleteAircraft(index) {
         const representative = document.getElementById('presentation-representative').value;
         const qubs = parseInt(document.getElementById('presentation-qubs').value) || 0;
         const remarks = document.getElementById('presentation-remarks').value;
+        
+        console.log('📝 Presentation data:', { aircraftIndex, editIndex, type, datetime });
+        
+        // Validate aircraft index
+        if (isNaN(aircraftIndex) || aircraftIndex < 0 || aircraftIndex >= aircraft.length) {
+            throw new Error('Invalid aircraft selection');
+        }
         
         const presentationData = {
             type,
@@ -2803,49 +2810,53 @@ async function deleteAircraft(index) {
             status: 'scheduled'
         };
         
-        // TEMPORARY: Save to localStorage first to ensure it works
+        // 1. Update local array first
         if (editIndex !== '') {
+            // Update existing
             aircraft[aircraftIndex].presentations[editIndex] = presentationData;
         } else {
+            // Add new
             if (!aircraft[aircraftIndex].presentations) {
                 aircraft[aircraftIndex].presentations = [];
             }
             aircraft[aircraftIndex].presentations.push(presentationData);
         }
         
-        // Save to localStorage immediately
-        localStorage.setItem('aione_aircraft', JSON.stringify(aircraft));
-        console.log('✅ Saved to localStorage');
+        console.log('✅ Updated local array');
         
-        // Then try to save to backend
+        // 2. Save to backend
         const aircraftId = aircraft[aircraftIndex].id;
-        if (aircraftId) {
-            console.log('🔄 Saving to backend, aircraft ID:', aircraftId);
-            const updateData = {
-                presentations: aircraft[aircraftIndex].presentations
-            };
-            
-            const response = await fetch(`${API_BASE}/aircraft/${aircraftId}`, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `Bearer ${authToken}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(updateData)
-            });
-            
-            if (response.ok) {
-                console.log('✅ Saved to backend successfully');
-                await loadAircraftFromBackend(); // Reload fresh data
-            } else {
-                console.warn('⚠️ Backend save failed, but localStorage saved');
-            }
+        console.log('🔄 Saving to backend, aircraft ID:', aircraftId);
+        
+        const updateData = {
+            presentations: aircraft[aircraftIndex].presentations
+        };
+        
+        const response = await fetch(`${API_BASE}/aircraft/${aircraftId}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updateData)
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(`Backend save failed: ${errorData.error}`);
         }
         
+        console.log('✅ Saved to backend successfully');
+        
+        // 3. Reload from backend to ensure sync
+        await loadAircraftFromBackend();
+        
+        // 4. Update UI
         updateDashboard();
         updateMobileLayout();
         hidePresentationModal();
-        console.log('✅ Presentation save completed');
+        
+        console.log('🎉 Presentation saved successfully!');
         
     } catch (error) {
         console.error('❌ PRESENTATION SAVE ERROR:', error);
@@ -3270,6 +3281,7 @@ async function initApp() {
     </script>
 </body>
 </html>
+
 
 
 
