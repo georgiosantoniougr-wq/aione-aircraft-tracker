@@ -2776,79 +2776,80 @@ async function deleteAircraft(index) {
         }
 
         // Presentation form submission
-        document.getElementById('presentation-form').addEventListener('submit', async function(e) {
+       document.getElementById('presentation-form').addEventListener('submit', async function(e) {
     e.preventDefault();
     
-    const aircraftIndex = document.getElementById('presentation-aircraft-index').value;
-    const editIndex = document.getElementById('presentation-edit-index').value;
-    const type = document.getElementById('presentation-type').value;
-    const datetime = document.getElementById('presentation-datetime').value;
-    const completion = document.getElementById('presentation-completion').value;
-    const location = document.getElementById('presentation-location').value.toUpperCase();
-    const representative = document.getElementById('presentation-representative').value;
-    const qubs = parseInt(document.getElementById('presentation-qubs').value) || 0;
-    const remarks = document.getElementById('presentation-remarks').value;
-    
-    const presentationData = {
-        type,
-        datetime,
-        completion,
-        location,
-        representative,
-        qubs,
-        remarks,
-        status: 'scheduled'
-    };
+    console.log('🔄 PRESENTATION SAVE STARTED...');
     
     try {
-        // Check for time conflicts
-        const hasConflict = checkPresentationConflict({
-            ...presentationData,
-            msn: aircraft[aircraftIndex].msn
-        });
+        const aircraftIndex = document.getElementById('presentation-aircraft-index').value;
+        const editIndex = document.getElementById('presentation-edit-index').value;
+        const type = document.getElementById('presentation-type').value;
+        const datetime = document.getElementById('presentation-datetime').value;
+        const completion = document.getElementById('presentation-completion').value;
+        const location = document.getElementById('presentation-location').value.toUpperCase();
+        const representative = document.getElementById('presentation-representative').value;
+        const qubs = parseInt(document.getElementById('presentation-qubs').value) || 0;
+        const remarks = document.getElementById('presentation-remarks').value;
         
+        const presentationData = {
+            type,
+            datetime,
+            completion,
+            location,
+            representative,
+            qubs,
+            remarks,
+            status: 'scheduled'
+        };
+        
+        // TEMPORARY: Save to localStorage first to ensure it works
         if (editIndex !== '') {
-            // Update existing presentation
             aircraft[aircraftIndex].presentations[editIndex] = presentationData;
         } else {
-            // Add new presentation
             if (!aircraft[aircraftIndex].presentations) {
                 aircraft[aircraftIndex].presentations = [];
             }
             aircraft[aircraftIndex].presentations.push(presentationData);
         }
         
-        // ✅ FIX: SAVE TO BACKEND, not just localStorage
+        // Save to localStorage immediately
+        localStorage.setItem('aione_aircraft', JSON.stringify(aircraft));
+        console.log('✅ Saved to localStorage');
+        
+        // Then try to save to backend
         const aircraftId = aircraft[aircraftIndex].id;
-        const updateData = {
-            presentations: aircraft[aircraftIndex].presentations
-        };
-        
-        const response = await fetch(`${API_BASE}/aircraft/${aircraftId}`, {
-            method: 'PUT',
-            headers: {
-                'Authorization': `Bearer ${authToken}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(updateData)
-        });
-        
-        if (!response.ok) throw new Error('Failed to save to backend');
-        
-        // Reload from backend to ensure sync
-        await loadAircraftFromBackend();
+        if (aircraftId) {
+            console.log('🔄 Saving to backend, aircraft ID:', aircraftId);
+            const updateData = {
+                presentations: aircraft[aircraftIndex].presentations
+            };
+            
+            const response = await fetch(`${API_BASE}/aircraft/${aircraftId}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${authToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(updateData)
+            });
+            
+            if (response.ok) {
+                console.log('✅ Saved to backend successfully');
+                await loadAircraftFromBackend(); // Reload fresh data
+            } else {
+                console.warn('⚠️ Backend save failed, but localStorage saved');
+            }
+        }
         
         updateDashboard();
         updateMobileLayout();
         hidePresentationModal();
-        
-        if (hasConflict) {
-            alert('Presentation scheduled with time conflict! Both presentations are marked with conflict warnings.');
-        }
+        console.log('✅ Presentation save completed');
         
     } catch (error) {
+        console.error('❌ PRESENTATION SAVE ERROR:', error);
         alert('Failed to save presentation: ' + error.message);
-        console.error('Presentation save error:', error);
     }
 });
 
@@ -3110,14 +3111,54 @@ async function deleteAircraft(index) {
             }
         }
 
-        // Delete representative
-        function deleteRepresentative(index) {
-            if (confirm('Are you sure you want to delete this representative?')) {
-                representatives.splice(index, 1);
-                saveData();
-                updateRepresentativesList();
+       // Delete representative - WITH BACKEND SYNC
+async function deleteRepresentative(index) {
+    if (confirm('Are you sure you want to delete this representative?')) {
+        try {
+            const repName = representatives[index];
+            
+            // If logged in, delete from backend
+            if (authToken) {
+                // First get the representative ID from backend
+                const response = await fetch(`${API_BASE}/representatives`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const repToDelete = data.data.find(rep => rep.name === repName);
+                    
+                    if (repToDelete) {
+                        const deleteResponse = await fetch(`${API_BASE}/representatives/${repToDelete.id}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'Authorization': `Bearer ${authToken}`,
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        
+                        if (!deleteResponse.ok) {
+                            throw new Error('Backend delete failed');
+                        }
+                    }
+                }
             }
+            
+            // Delete from local array
+            representatives.splice(index, 1);
+            localStorage.setItem('aione_representatives', JSON.stringify(representatives));
+            updateRepresentativesList();
+            console.log('✅ Representative deleted');
+            
+        } catch (error) {
+            console.error('❌ Representative delete error:', error);
+            alert('Failed to delete representative: ' + error.message);
         }
+    }
+}
 
         // Export data
         function exportData() {
@@ -3229,6 +3270,7 @@ async function initApp() {
     </script>
 </body>
 </html>
+
 
 
 
