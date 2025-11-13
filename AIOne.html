@@ -2052,38 +2052,42 @@ document.getElementById('aircraft-form').addEventListener('submit', async functi
                 </div>
             `;
             
-            // Add presentations if any
-            if (ac.presentations && ac.presentations.length > 0) {
-                // SORT presentations alphabetically by type
-                const sortedPresentations = [...ac.presentations].sort((a, b) => a.type.localeCompare(b.type));
-                
-                html += `
-                    <div class="detail-section">
-                        <h3>Presentations (${sortedPresentations.length})</h3>
-                        ${sortedPresentations.map((pres, presIndex) => `
-                            <div class="presentation-item ${pres.completion || 'full'}">
-                                <div class="presentation-details">
-                                    <div><strong>${pres.type}</strong></div>
-                                    <div>${formatDateTime(pres.datetime)}</div>
-                                    <div>Location: ${pres.location || 'N/A'}</div>
-                                    <div>Completion: ${pres.completion || 'full'}</div>
-                                    ${pres.representative ? `<div>Representative: ${pres.representative}</div>` : ''}
-                                    ${pres.qubs ? `<div>QLBs: ${pres.qubs}</div>` : ''}
-                                    ${pres.remarks ? `<div>Remarks: ${pres.remarks}</div>` : ''}
-                                </div>
-                                <div>
-                                    <button class="edit-btn" onclick="editPresentation(${index}, ${presIndex})">Edit</button>
-                                    <button class="archive-btn" onclick="deletePresentation(${index}, ${presIndex})">Delete</button>
-                                    ${pres.status !== 'completed' ? 
-                                        `<button class="done-btn" onclick="completePresentation(${index}, ${presIndex})">Done</button>` : 
-                                        ''
-                                    }
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
+           // Add presentations if any - FIXED VERSION
+if (ac.presentations && ac.presentations.length > 0) {
+  // SORT presentations alphabetically by type BUT KEEP ORIGINAL INDEXES
+  const presentationsWithIndexes = ac.presentations.map((pres, originalIndex) => ({
+    ...pres,
+    originalIndex: originalIndex  // Store the original index
+  })).sort((a, b) => a.type.localeCompare(b.type));
+  
+  html += `
+    <div class="detail-section">
+      <h3>Presentations (${presentationsWithIndexes.length})</h3>
+      ${presentationsWithIndexes.map((pres, sortedIndex) => `
+        <div class="presentation-item ${pres.completion || 'full'} ${pres.status === 'completed' ? 'completed' : ''}">
+          <div class="presentation-details">
+            <div><strong>${pres.type}</strong> ${pres.status === 'completed' ? '✅' : ''}</div>
+            <div>${formatDateTime(pres.datetime)}</div>
+            <div>Location: ${pres.location || 'N/A'}</div>
+            <div>Completion: ${pres.completion || 'full'}</div>
+            ${pres.representative ? `<div>Representative: ${pres.representative}</div>` : ''}
+            ${pres.qubs ? `<div>QLBs: ${pres.qubs}</div>` : ''}
+            ${pres.remarks ? `<div>Remarks: ${pres.remarks}</div>` : ''}
+            <div><small>Status: ${pres.status || 'scheduled'}</small></div>
+          </div>
+          <div>
+            <button class="edit-btn" onclick="editPresentation(${index}, ${pres.originalIndex})">Edit</button>
+            <button class="archive-btn" onclick="deletePresentation(${index}, ${pres.originalIndex})">Delete</button>
+            ${pres.status !== 'completed' ? 
+              `<button class="done-btn" onclick="completePresentation(${index}, ${pres.originalIndex})">Done</button>` : 
+              '<span style="color: green; font-weight: bold;">Completed</span>'
             }
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
             
             detailContent.innerHTML = html;
             document.getElementById('overview-view').style.display = 'none';
@@ -2908,41 +2912,117 @@ async function deleteAircraft(index) {
             document.getElementById('presentation-modal').style.display = 'block';
         }
 
-        // Delete presentation
-        function deletePresentation(aircraftIndex, presentationIndex) {
-            if (!canDelete()) {
-                alert('You do not have permission to delete presentations');
-                return;
-            }
-            if (confirm('Are you sure you want to delete this presentation?')) {
-                aircraft[aircraftIndex].presentations.splice(presentationIndex, 1);
-                saveData();
-                updateDashboard();
-                updateMobileLayout();
-                
-                // If we're in detail view, refresh it
-                if (document.getElementById('detail-view').style.display === 'block') {
-                    showAircraftDetail(aircraftIndex);
-                }
-            }
-        }
+       // Delete presentation - FIXED VERSION
+async function deletePresentation(aircraftIndex, presentationIndex) {
+  if (!canDelete()) {
+    alert('You do not have permission to delete presentations');
+    return;
+  }
+  
+  if (confirm('Are you sure you want to delete this presentation?')) {
+    try {
+      console.log('🗑️ Deleting presentation:', { aircraftIndex, presentationIndex });
+      
+      // 1. Remove from local array
+      aircraft[aircraftIndex].presentations.splice(presentationIndex, 1);
+      
+      // 2. Save to backend immediately
+      const aircraftId = aircraft[aircraftIndex].id;
+      const updateData = {
+        presentations: aircraft[aircraftIndex].presentations
+      };
+      
+      const response = await fetch(`${API_BASE}/aircraft/${aircraftId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updateData)
+      });
+      
+      if (!response.ok) {
+        throw new Error('Backend delete failed');
+      }
+      
+      console.log('✅ Presentation deleted from backend');
+      
+      // 3. Reload from backend to ensure sync
+      await loadAircraftFromBackend();
+      
+      // 4. Update UI
+      updateDashboard();
+      updateMobileLayout();
+      
+      // 5. Refresh detail view if open
+      if (document.getElementById('detail-view').style.display === 'block') {
+        showAircraftDetail(aircraftIndex);
+      }
+      
+    } catch (error) {
+      console.error('❌ Delete presentation error:', error);
+      alert('Failed to delete presentation: ' + error.message);
+    }
+  }
+}
 
-        // Complete presentation
-        function completePresentation(aircraftIndex, presentationIndex) {
-            if (!canEdit()) {
-                alert('You do not have permission to complete presentations');
-                return;
-            }
-            aircraft[aircraftIndex].presentations[presentationIndex].status = 'completed';
-            saveData();
-            updateDashboard();
-            updateMobileLayout();
-            
-            // If we're in detail view, refresh it
-            if (document.getElementById('detail-view').style.display === 'block') {
-                showAircraftDetail(aircraftIndex);
-            }
-        }
+        // Complete presentation - FIXED VERSION
+async function completePresentation(aircraftIndex, presentationIndex) {
+  if (!canEdit()) {
+    alert('You do not have permission to complete presentations');
+    return;
+  }
+  
+  try {
+    console.log('🔄 Completing presentation:', { aircraftIndex, presentationIndex });
+    
+    // 1. Update local array
+    aircraft[aircraftIndex].presentations[presentationIndex].status = 'completed';
+    
+    // 2. Save to backend immediately
+    const aircraftId = aircraft[aircraftIndex].id;
+    const updateData = {
+      presentations: aircraft[aircraftIndex].presentations
+    };
+    
+    console.log('💾 Saving to backend, aircraft ID:', aircraftId);
+    console.log('📝 Presentations to save:', updateData.presentations);
+    
+    const response = await fetch(`${API_BASE}/aircraft/${aircraftId}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${authToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(updateData)
+    });
+    
+    if (!response.ok) {
+      throw new Error('Backend save failed');
+    }
+    
+    console.log('✅ Presentation marked as completed in backend');
+    
+    // 3. Reload from backend to ensure sync
+    await loadAircraftFromBackend();
+    
+    // 4. Update UI
+    updateDashboard();
+    updateMobileLayout();
+    
+    // 5. Refresh detail view if open
+    if (document.getElementById('detail-view').style.display === 'block') {
+      showAircraftDetail(aircraftIndex);
+    }
+    
+  } catch (error) {
+    console.error('❌ Complete presentation error:', error);
+    alert('Failed to complete presentation: ' + error.message);
+    
+    // Revert local change if backend failed
+    aircraft[aircraftIndex].presentations[presentationIndex].status = 'scheduled';
+  }
+}
 
         // Toggle master list
         function toggleMasterList() {
@@ -3281,6 +3361,7 @@ async function initApp() {
     </script>
 </body>
 </html>
+
 
 
 
