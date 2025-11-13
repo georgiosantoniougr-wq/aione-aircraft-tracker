@@ -269,6 +269,7 @@ app.post('/api/aircraft', authenticateToken, async (req, res) => {
 });
 
 // Update aircraft
+// Update aircraft - FIXED VERSION (PRESENTATIONS SYNC FIX)
 app.put('/api/aircraft/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
@@ -287,7 +288,9 @@ app.put('/api/aircraft/:id', authenticateToken, async (req, res) => {
       apu_sn: req.body.apuSn,
       concessions_c: req.body.concessionsC,
       concessions_r: req.body.concessionsR,
-      remarks: req.body.remarks
+      remarks: req.body.remarks,
+      // CRITICAL FIX: Include presentations array to prevent data loss
+      presentations: req.body.presentations || []
     };
 
     // Verify aircraft belongs to user
@@ -561,6 +564,7 @@ app.listen(PORT, async () => {
 }).on('error', (err) => {
   console.error('❌ Server failed to start:', err);
 });
+
 
 
 
