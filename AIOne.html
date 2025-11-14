@@ -2653,13 +2653,61 @@ function updateMobileStats() {
     if (conflictsCount) conflictsCount.textContent = conflictCount;
 }
 
-        // Toggle archive status
-        function toggleArchive(index) {
-            aircraft[index].status = aircraft[index].status === 'Archived' ? 'FAL' : 'Archived';
-            saveData();
-            updateDashboard();
-            updateMobileLayout();
-        }
+       // Toggle archive status - FIXED VERSION
+async function toggleArchive(index) {
+  try {
+    console.log('🔄 Toggling archive status for aircraft index:', index);
+    
+    // 1. Update local array
+    const newStatus = aircraft[index].status === 'Archived' ? 'FAL' : 'Archived';
+    aircraft[index].status = newStatus;
+    
+    // 2. Save to backend immediately
+    const aircraftId = aircraft[index].id;
+    const updateData = {
+      status: newStatus
+      // Only update status to avoid overwriting other fields
+    };
+    
+    console.log('💾 Saving archive status to backend:', { 
+      aircraftId, 
+      msn: aircraft[index].msn, 
+      newStatus 
+    });
+    
+    const response = await fetch(`${API_BASE}/aircraft/${aircraftId}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${authToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(updateData)
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`Backend save failed: ${errorData.error}`);
+    }
+    
+    console.log('✅ Archive status saved to backend successfully');
+    
+    // 3. Reload from backend to ensure sync
+    await loadAircraftFromBackend();
+    
+    // 4. Update UI
+    updateDashboard();
+    updateMobileLayout();
+    
+  } catch (error) {
+    console.error('❌ Toggle archive error:', error);
+    alert('Failed to update archive status: ' + error.message);
+    
+    // Revert local change if backend failed
+    aircraft[index].status = aircraft[index].status === 'Archived' ? 'FAL' : 'Archived';
+    updateDashboard();
+    updateMobileLayout();
+  }
+}
 
         // FIXED: Delete aircraft - WITH BACKUP METHOD
 async function deleteAircraft(index) {
@@ -3361,6 +3409,7 @@ async function initApp() {
     </script>
 </body>
 </html>
+
 
 
 
