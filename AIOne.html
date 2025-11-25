@@ -1239,9 +1239,9 @@
                 </div>
                 
                 <div class="presentation-form-group">
-                    <label>Date & Time:</label>
-                    <input type="datetime-local" id="presentation-datetime" required>
-                </div>
+    <label>Date & Time (24-hour format):</label>
+    <input type="datetime-local" id="presentation-datetime" required step="1">
+</div>
                 
                 <div class="presentation-form-group">
                     <label>Completion Status:</label>
@@ -1432,6 +1432,7 @@
             'JST': { name: 'Jetstar Airways', logo: 'https://logo.clearbit.com/jetstar.com' },
             'WZZ': { name: 'WIZZ Air', logo: 'https://logo.clearbit.com/wizzair.com' },
             'VIV': { name: 'Viva Aerobus', logo: 'https://logo.clearbit.com/vivaaerobus.com' }
+            'THY': { name: 'Turkish Airlines', logo: 'https://logo.clearbit.com/turkishairlines.com' }
         };
 
         const airlineCodes = Object.keys(airlineData);
@@ -2814,10 +2815,10 @@ async function deleteAircraft(index) {
                 repSelect.appendChild(option);
             });
             
-            // Set default datetime to now
-            const now = new Date();
-            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-            document.getElementById('presentation-datetime').value = now.toISOString().slice(0, 16);
+            // Set default datetime to now in 24-hour format
+const now = new Date();
+now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+document.getElementById('presentation-datetime').value = now.toISOString().slice(0, 16);
             
             document.getElementById('presentation-modal').style.display = 'block';
         }
@@ -3409,6 +3410,7 @@ async function initApp() {
     </script>
 </body>
 </html>
+
 
 
 
