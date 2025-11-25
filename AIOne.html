@@ -1518,63 +1518,69 @@ if (aircraft.length > 0) {
 
         // NEW: Load presentation types from backend
         async function loadPresentationTypes() {
-            try {
-                if (authToken) {
-                    const response = await fetch(`${API_BASE}/presentation-types`, {
-                        headers: {
-                            'Authorization': `Bearer ${authToken}`,
-                            'Content-Type': 'application/json'
-                        }
-                    });
-                    
-                    if (response.ok) {
-                        const data = await response.json();
-                        presentationTypes = data.data || [];
-                        localStorage.setItem('aione_presentation_types', JSON.stringify(presentationTypes));
-                        return;
-                    }
-                }
-                
-                // Fallback to localStorage
-                const localData = JSON.parse(localStorage.getItem('aione_presentation_types'));
-                presentationTypes = localData || defaultPresentationTypes;
-                
-            } catch (error) {
-                console.log('Backend presentation types load failed:', error);
-                const localData = JSON.parse(localStorage.getItem('aione_presentation_types'));
-                presentationTypes = localData || defaultPresentationTypes;
-            }
+  try {
+    if (authToken) {
+      const response = await fetch(`${API_BASE}/presentation-types`, {
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+          'Content-Type': 'application/json'
         }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        presentationTypes = data.data || [];
+        localStorage.setItem('aione_presentation_types', JSON.stringify(presentationTypes));
+        return;
+      } else if (response.status === 403) {
+        console.log('⚠️ 403 Error - Using local presentation types');
+        // Continue to local fallback
+      }
+    }
+    
+    // Fallback to localStorage
+    const localData = JSON.parse(localStorage.getItem('aione_presentation_types'));
+    presentationTypes = localData || defaultPresentationTypes;
+    
+  } catch (error) {
+    console.log('Backend presentation types load failed:', error);
+    const localData = JSON.parse(localStorage.getItem('aione_presentation_types'));
+    presentationTypes = localData || defaultPresentationTypes;
+  }
+}
 
         // NEW: Load representatives from backend
-        async function loadRepresentatives() {
-            try {
-                if (authToken) {
-                    const response = await fetch(`${API_BASE}/representatives`, {
-                        headers: {
-                            'Authorization': `Bearer ${authToken}`,
-                            'Content-Type': 'application/json'
-                        }
-                    });
-                    
-                    if (response.ok) {
-                        const data = await response.json();
-                        representatives = data.data ? data.data.map(rep => rep.name) : [];
-                        localStorage.setItem('aione_representatives', JSON.stringify(representatives));
-                        return;
-                    }
-                }
-                
-                // Fallback to localStorage
-                const localData = JSON.parse(localStorage.getItem('aione_representatives'));
-                representatives = localData || ["John Smith", "Maria Garcia", "David Chen"];
-                
-            } catch (error) {
-                console.log('Backend representatives load failed:', error);
-                const localData = JSON.parse(localStorage.getItem('aione_representatives'));
-                representatives = localData || ["John Smith", "Maria Garcia", "David Chen"];
-            }
+      async function loadRepresentatives() {
+  try {
+    if (authToken) {
+      const response = await fetch(`${API_BASE}/representatives`, {
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+          'Content-Type': 'application/json'
         }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        representatives = data.data ? data.data.map(rep => rep.name) : [];
+        localStorage.setItem('aione_representatives', JSON.stringify(representatives));
+        return;
+      } else if (response.status === 403) {
+        console.log('⚠️ 403 Error - Using local representatives');
+        // Continue to local fallback
+      }
+    }
+    
+    // Fallback to localStorage
+    const localData = JSON.parse(localStorage.getItem('aione_representatives'));
+    representatives = localData || ["John Smith", "Maria Garcia", "David Chen"];
+    
+  } catch (error) {
+    console.log('Backend representatives load failed:', error);
+    const localData = JSON.parse(localStorage.getItem('aione_representatives'));
+    representatives = localData || ["John Smith", "Maria Garcia", "David Chen"];
+  }
+}
 
         // ==================== MISSING FUNCTIONS TO FIX INITIALIZATION ERROR ====================
 
@@ -3415,6 +3421,7 @@ async function initApp() {
     </script>
 </body>
 </html>
+
 
 
 
