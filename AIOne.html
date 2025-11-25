@@ -2843,7 +2843,7 @@ document.getElementById('presentation-time').value = now.toTimeString().slice(0,
         }
 
         // Presentation form submission
-      document.getElementById('presentation-form').addEventListener('submit', async function(e) {
+     document.getElementById('presentation-form').addEventListener('submit', async function(e) {
     e.preventDefault();
     
     console.log('🔄 PRESENTATION SAVE STARTED...');
@@ -2852,7 +2852,12 @@ document.getElementById('presentation-time').value = now.toTimeString().slice(0,
         const aircraftIndex = parseInt(document.getElementById('presentation-aircraft-index').value);
         const editIndex = document.getElementById('presentation-edit-index').value;
         const type = document.getElementById('presentation-type').value;
-        const datetime = document.getElementById('presentation-datetime').value;
+        
+        // ✅ FIXED: Get date and time separately and combine them
+        const date = document.getElementById('presentation-date').value;
+        const time = document.getElementById('presentation-time').value;
+        const datetime = `${date}T${time}:00`; // Combine date and time
+        
         const completion = document.getElementById('presentation-completion').value;
         const location = document.getElementById('presentation-location').value.toUpperCase();
         const representative = document.getElementById('presentation-representative').value;
@@ -3424,6 +3429,7 @@ async function initApp() {
     </script>
 </body>
 </html>
+
 
 
 
