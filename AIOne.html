@@ -218,6 +218,7 @@
             .status-FAL { background: #ffeaa7; color: #856404; }
             .status-Delivery { background: #d1ecf1; color: #0c5460; }
             .status-Storage { background: #e2e3e5; color: #383d41; }
+            .status-Section { background: #d8bfd8; color: #4b0082; }
             .status-Archived { 
                 background: #95a5a6; 
                 color: white;
@@ -966,12 +967,13 @@
                     </div>
                     <div class="filter-group">
                         <select id="filter-status" onchange="applyFilters()">
-                            <option value="">All Status</option>
-                            <option value="FAL">FAL</option>
-                            <option value="Delivery">Delivery</option>
-                            <option value="Storage">Storage</option>
-                            <option value="Archived">Archived</option>
-                        </select>
+    <option value="">All Status</option>
+    <option value="FAL">FAL</option>
+    <option value="Delivery">Delivery</option>
+    <option value="Storage">Storage</option>
+    <option value="Section">Section</option>
+    <option value="Archived">Archived</option>
+</select>
                     </div>
                     <button class="clear-filters" onclick="clearFilters()">Clear Filters</button>
                 </div>
@@ -1173,12 +1175,13 @@
                 </div>
                 
                 <div class="form-group">
-                    <select id="status">
-                        <option value="FAL">FAL</option>
-                        <option value="Delivery">Delivery</option>
-                        <option value="Storage">Storage</option>
-                        <option value="Archived">Archived</option>
-                    </select>
+                   <select id="status">
+    <option value="FAL">FAL</option>
+    <option value="Delivery">Delivery</option>
+    <option value="Storage">Storage</option>
+    <option value="Section">Section</option>
+    <option value="Archived">Archived</option>
+</select>
                 </div>
 
                 <h3>Engine & APU Details</h3>
@@ -1240,7 +1243,7 @@
                 
                 <div class="presentation-form-group">
     <label>Date & Time (24-hour format):</label>
-    <input type="datetime-local" id="presentation-datetime" required step="1">
+   <input type="datetime-local" id="presentation-datetime" required>
 </div>
                 
                 <div class="presentation-form-group">
@@ -2816,9 +2819,11 @@ async function deleteAircraft(index) {
             });
             
             // Set default datetime to now in 24-hour format
+// Set default datetime to now in 24-hour format
 const now = new Date();
 now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-document.getElementById('presentation-datetime').value = now.toISOString().slice(0, 16);
+document.getElementById('presentation-date').value = now.toISOString().slice(0, 10);
+document.getElementById('presentation-time').value = now.toTimeString().slice(0, 5); // Gets HH:MM format
             
             document.getElementById('presentation-modal').style.display = 'block';
         }
@@ -3410,6 +3415,7 @@ async function initApp() {
     </script>
 </body>
 </html>
+
 
 
 
