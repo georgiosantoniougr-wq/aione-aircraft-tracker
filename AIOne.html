@@ -2938,47 +2938,61 @@ document.getElementById('presentation-time').value = now.toTimeString().slice(0,
 
         // Edit presentation
         function editPresentation(aircraftIndex, presentationIndex) {
-            if (!canEdit()) {
-                alert('You do not have permission to edit presentations');
-                return;
-            }
-            const pres = aircraft[aircraftIndex].presentations[presentationIndex];
-            
-            document.getElementById('presentation-modal-title').textContent = 'Edit Presentation';
-            document.getElementById('presentation-aircraft-index').value = aircraftIndex;
-            document.getElementById('presentation-edit-index').value = presentationIndex;
-            
-            // Populate presentation type dropdown
-            const typeSelect = document.getElementById('presentation-type');
-            typeSelect.innerHTML = '<option value="">Select Presentation Type</option>';
-            presentationTypes.forEach(type => {
-                const option = document.createElement('option');
-                option.value = type.name;
-                option.textContent = `${type.name} (${type.duration} min)`;
-                option.selected = type.name === pres.type;
-                typeSelect.appendChild(option);
-            });
-            
-            // Populate representative dropdown
-            const repSelect = document.getElementById('presentation-representative');
-            repSelect.innerHTML = '<option value="">Select Representative</option>';
-            representatives.forEach(rep => {
-                const option = document.createElement('option');
-                option.value = rep;
-                option.textContent = rep;
-                option.selected = rep === pres.representative;
-                repSelect.appendChild(option);
-            });
-            
-            // Set form values
-            document.getElementById('presentation-datetime').value = pres.datetime.slice(0, 16);
-            document.getElementById('presentation-completion').value = pres.completion || 'full';
-            document.getElementById('presentation-location').value = pres.location || '';
-            document.getElementById('presentation-qubs').value = pres.qubs || 0;
-            document.getElementById('presentation-remarks').value = pres.remarks || '';
-            
-            document.getElementById('presentation-modal').style.display = 'block';
-        }
+    if (!canEdit()) {
+        alert('You do not have permission to edit presentations');
+        return;
+    }
+    const pres = aircraft[aircraftIndex].presentations[presentationIndex];
+    
+    document.getElementById('presentation-modal-title').textContent = 'Edit Presentation';
+    document.getElementById('presentation-aircraft-index').value = aircraftIndex;
+    document.getElementById('presentation-edit-index').value = presentationIndex;
+    
+    // Populate presentation type dropdown
+    const typeSelect = document.getElementById('presentation-type');
+    typeSelect.innerHTML = '<option value="">Select Presentation Type</option>';
+    presentationTypes.forEach(type => {
+        const option = document.createElement('option');
+        option.value = type.name;
+        option.textContent = `${type.name} (${type.duration} min)`;
+        option.selected = type.name === pres.type;
+        typeSelect.appendChild(option);
+    });
+    
+    // Populate representative dropdown
+    const repSelect = document.getElementById('presentation-representative');
+    repSelect.innerHTML = '<option value="">Select Representative</option>';
+    representatives.forEach(rep => {
+        const option = document.createElement('option');
+        option.value = rep;
+        option.textContent = rep;
+        option.selected = rep === pres.representative;
+        repSelect.appendChild(option);
+    });
+    
+    // ✅ FIXED: Set form values with separate date and time
+    const presDate = new Date(pres.datetime);
+    
+    // Format date as YYYY-MM-DD
+    const year = presDate.getFullYear();
+    const month = String(presDate.getMonth() + 1).padStart(2, '0');
+    const day = String(presDate.getDate()).padStart(2, '0');
+    const formattedDate = `${year}-${month}-${day}`;
+    
+    // Format time as HH:MM (24-hour)
+    const hours = String(presDate.getHours()).padStart(2, '0');
+    const minutes = String(presDate.getMinutes()).padStart(2, '0');
+    const formattedTime = `${hours}:${minutes}`;
+    
+    document.getElementById('presentation-date').value = formattedDate;
+    document.getElementById('presentation-time').value = formattedTime;
+    document.getElementById('presentation-completion').value = pres.completion || 'full';
+    document.getElementById('presentation-location').value = pres.location || '';
+    document.getElementById('presentation-qubs').value = pres.qubs || 0;
+    document.getElementById('presentation-remarks').value = pres.remarks || '';
+    
+    document.getElementById('presentation-modal').style.display = 'block';
+}
 
        // Delete presentation - FIXED VERSION
 async function deletePresentation(aircraftIndex, presentationIndex) {
@@ -3429,6 +3443,7 @@ async function initApp() {
     </script>
 </body>
 </html>
+
 
 
 
