@@ -922,7 +922,7 @@
                 <span id="auth-user" style="margin-left: 10px;"></span>
             </div>
             <div class="auth-buttons">
-               <button id="login-btn" class="auth-btn" onclick="showLoginForm()">Login</button>
+               <button id="login-btn" class="auth-btn" onclick="var f=document.getElementById('login-form'); if(f) f.style.display='block';">Login</button>
                 <button id="logout-btn" class="auth-btn" style="display: none;">Logout</button>
             </div>
         </div>
@@ -1368,6 +1368,7 @@
 
         // Show login form
         // Show login form
+// Show login form  
 // Show login form  
 window.showLoginForm = function() {
     console.log("🚀 showLoginForm() called!");
@@ -3622,6 +3623,7 @@ document.addEventListener('DOMContentLoaded', function() {
     </script>
 </body>
 </html>
+
 
 
 
