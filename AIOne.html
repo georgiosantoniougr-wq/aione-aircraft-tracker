@@ -1368,12 +1368,17 @@
 
         // Show login form
         // Show login form
-function showLoginForm() {
-    console.log('📋 showLoginForm() called');
+// Show login form  
+window.showLoginForm = function() {
+    console.log("🚀 showLoginForm() called!");
     const loginForm = document.getElementById('login-form');
     if (loginForm) {
-        console.log('✅ Found login form, displaying it');
+        console.log("✅ Found login form, showing it");
         loginForm.style.display = 'block';
+    } else {
+        console.error("❌ ERROR: login-form not found!");
+    }
+};
         
         // Auto-focus on email field for better UX
         const emailField = document.getElementById('login-email');
@@ -3617,6 +3622,7 @@ document.addEventListener('DOMContentLoaded', function() {
     </script>
 </body>
 </html>
+
 
 
 
