@@ -1295,11 +1295,11 @@
                 <button type="button" onclick="hidePresentationModal()">Cancel</button>
             </form>
         </div>
-    </div>
+       </div>
+</div>  <!-- Make sure this closing div exists -->
 
-    <script>
-
-        // ==================== EMERGENCY FUNCTION DEFINITIONS ====================
+<script>
+    // ==================== EMERGENCY FUNCTION DEFINITIONS ====================
         // ADD THIS RIGHT HERE - at the VERY BEGINNING of the script
         
         window.login = function() {
@@ -1344,7 +1344,12 @@
         
         console.log('✅ Emergency functions defined');
         // ==================== END EMERGENCY FUNCTIONS ====================
+        };
         
+        console.log('✅ Emergency functions loaded');
+</script>  <!-- ADD THIS CLOSING TAG -->
+
+<script>  <!-- This opens the ORIGINAL main script -->
         // The rest of your existing JavaScript continues here...
         // ==================== MINIMAL BACKEND INTEGRATION ====================
         const API_BASE = 'https://aione-aircraft-tracker-1.onrender.com/api';
@@ -3659,6 +3664,7 @@ document.addEventListener('DOMContentLoaded', function() {
     </script>
 </body>
 </html>
+
 
 
 
