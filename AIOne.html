@@ -922,7 +922,7 @@
                 <span id="auth-user" style="margin-left: 10px;"></span>
             </div>
             <div class="auth-buttons">
-               <button id="login-btn" class="auth-btn" onclick="showLoginForm()">Login</button>
+              <button id="login-btn" class="auth-btn" onclick="document.getElementById('login-form').style.display='block'; document.getElementById('login-email').focus();">Login</button>
                 <button id="logout-btn" class="auth-btn" style="display: none;">Logout</button>
             </div>
         </div>
@@ -1298,6 +1298,7 @@
     </div>
 
     <script>
+    
         // ==================== MINIMAL BACKEND INTEGRATION ====================
         const API_BASE = 'https://aione-aircraft-tracker-1.onrender.com/api';
         let authToken = localStorage.getItem('aione_token');
@@ -3618,6 +3619,7 @@ document.addEventListener('DOMContentLoaded', function() {
     </script>
 </body>
 </html>
+
 
 
 
