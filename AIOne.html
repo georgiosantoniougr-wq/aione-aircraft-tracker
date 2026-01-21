@@ -935,7 +935,7 @@
             <div class="form-group">
                 <input type="password" id="login-password" placeholder="Password">
             </div>
-          <button onclick="login()" style="background: #27ae60; color: white; padding: 10px; border: none; border-radius: 5px; width: 100%;">Login</button>
+          <button onclick="return login()" style="background: #27ae60; color: white; padding: 10px; border: none; border-radius: 5px; width: 100%;">Login</button>
             <div style="text-align: center; margin-top: 10px;">
                 <small>No account? <a href="https://aione-aircraft-tracker-1.onrender.com/register.html" target="_blank">Register here</a></small>
             </div>
@@ -3609,45 +3609,48 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }, 500);
 });
+       </script>
+
+    <!-- SIMPLE EMERGENCY FUNCTIONS -->
+    <script>
+    window.login = function() {
+        var email = document.getElementById('login-email');
+        var password = document.getElementById('login-password');
+        
+        if (!email || !password || !email.value || !password.value) {
+            alert('Please enter email and password');
+            return false;
+        }
+        
+        alert('TEST LOGIN: ' + email.value);
+        
+        // Update UI
+        document.getElementById('login-form').style.display = 'none';
+        document.getElementById('auth-status').textContent = 'Logged in:';
+        document.getElementById('auth-user').textContent = email.value;
+        document.getElementById('login-btn').style.display = 'none';
+        document.getElementById('logout-btn').style.display = 'block';
+        
+        return false;
+    };
+
+    window.showAddForm = function() {
+        var modal = document.getElementById('aircraft-modal');
+        if (modal) modal.style.display = 'block';
+        return false;
+    };
+
+    window.showLoginForm = function() {
+        var form = document.getElementById('login-form');
+        if (form) form.style.display = 'block';
+        return false;
+    };
+
+    console.log('✅ Emergency functions loaded');
     </script>
-                <!-- EMERGENCY FUNCTIONS - ADD AT VERY END -->
-<script>
-// Simple emergency login function
-window.login = function() {
-    var email = document.getElementById('login-email').value;
-    var password = document.getElementById('login-password').value;
-    
-    if (!email || !password) {
-        alert('Enter email and password');
-        return;
-    }
-    
-    alert('TEST LOGIN: ' + email);
-    
-    // Update UI
-    document.getElementById('login-form').style.display = 'none';
-    document.getElementById('auth-status').textContent = 'Logged in:';
-    document.getElementById('auth-user').textContent = email;
-    document.getElementById('login-btn').style.display = 'none';
-    document.getElementById('logout-btn').style.display = 'block';
-};
-
-// Simple showAddForm
-window.showAddForm = function() {
-    document.getElementById('aircraft-modal').style.display = 'block';
-};
-
-// Simple showLoginForm
-window.showLoginForm = function() {
-    document.getElementById('login-form').style.display = 'block';
-};
-
-console.log('Emergency functions loaded');
-</script>
 </body>
 </html>
-</body>
-</html>
+
 
 
 
