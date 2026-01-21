@@ -922,7 +922,7 @@
                 <span id="auth-user" style="margin-left: 10px;"></span>
             </div>
             <div class="auth-buttons">
-               <button id="login-btn" class="auth-btn" onclick="var f=document.getElementById('login-form'); if(f) f.style.display='block';">Login</button>
+               <button id="login-btn" class="auth-btn" onclick="showLoginForm()">Login</button>
                 <button id="logout-btn" class="auth-btn" style="display: none;">Logout</button>
             </div>
         </div>
@@ -1386,11 +1386,6 @@ window.showLoginForm = function() {
         if (emailField) {
             setTimeout(() => emailField.focus(), 100);
         }
-    } else {
-        console.error('❌ ERROR: Login form not found!');
-        alert('Login form not found. Please refresh the page.');
-    }
-}
 
         // Hide login form  
         function hideLoginForm() {
@@ -3623,6 +3618,7 @@ document.addEventListener('DOMContentLoaded', function() {
     </script>
 </body>
 </html>
+
 
 
 
