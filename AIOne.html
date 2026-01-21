@@ -935,14 +935,14 @@
             <div class="form-group">
                 <input type="password" id="login-password" placeholder="Password">
             </div>
-            <button onclick="login()" style="background: #27ae60; color: white; padding: 10px; border: none; border-radius: 5px; width: 100%;">Login</button>
+           <button onclick="alert('JavaScript is broken - please refresh page');" style="background: #27ae60; color: white; padding: 10px; border: none; border-radius: 5px; width: 100%;">Login</button>
             <div style="text-align: center; margin-top: 10px;">
                 <small>No account? <a href="https://aione-aircraft-tracker-1.onrender.com/register.html" target="_blank">Register here</a></small>
             </div>
         </div>
         
         <div id="overview-view">
-            <button class="add-btn" onclick="showAddForm()">Add New Aircraft</button>
+            <button class="add-btn" onclick="alert('JavaScript error - functions not loading');">Add New Aircraft</button>
             
             <div id="mobile-home-stats" class="mobile-home-grid">
                 <div class="mobile-stat-card">
@@ -1367,20 +1367,13 @@
             loadLocalData();
         }
 
-        // Show login form
-        // Show login form
-// Show login form  
-// Show login form  
-window.showLoginForm = function() {
-    console.log("🚀 showLoginForm() called!");
-    const loginForm = document.getElementById('login-form');
-    if (loginForm) {
-        console.log("✅ Found login form, showing it");
-        loginForm.style.display = 'block';
-    } else {
-        console.error("❌ ERROR: login-form not found!");
-    }
-};
+                // Show login form - SIMPLIFIED VERSION
+        window.showLoginForm = function() {
+            const loginForm = document.getElementById('login-form');
+            if (loginForm) {
+                loginForm.style.display = 'block';
+            }
+        };
         
         // Auto-focus on email field for better UX
         const emailField = document.getElementById('login-email');
@@ -3619,6 +3612,7 @@ document.addEventListener('DOMContentLoaded', function() {
     </script>
 </body>
 </html>
+
 
 
 
