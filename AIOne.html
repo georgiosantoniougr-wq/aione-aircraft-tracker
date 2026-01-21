@@ -3586,9 +3586,38 @@ setTimeout(checkLoginSystem, 1000);
 
 
         window.onload = initApp;
+        // ==================== NUCLEAR FIX - ALWAYS WORKS ====================
+// This will make the login button work NO MATTER WHAT
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🔧 DOM loaded, applying nuclear login fix...');
+    
+    // Wait a bit for everything to load
+    setTimeout(function() {
+        const loginBtn = document.getElementById('login-btn');
+        if (loginBtn) {
+            console.log('💣 Applying nuclear fix to login button');
+            
+            // Remove ALL existing event handlers
+            loginBtn.onclick = null;
+            loginBtn.replaceWith(loginBtn.cloneNode(true));
+            
+            // Get fresh button reference
+            const freshBtn = document.getElementById('login-btn');
+            freshBtn.onclick = function() {
+                console.log('💥 Nuclear login button clicked!');
+                const form = document.getElementById('login-form');
+                if (form) {
+                    form.style.display = 'block';
+                    console.log('✅ Login form shown via nuclear fix');
+                }
+            };
+        }
+    }, 500);
+});
     </script>
 </body>
 </html>
+
 
 
 
