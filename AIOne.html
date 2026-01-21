@@ -394,6 +394,20 @@
             height: 25px;
             font-size: 10px;
         }
+
+        /* Improved logo container styles - ADD THESE NEW RULES */
+.logo-container, .mobile-logo-container {
+    display: inline-block;
+    vertical-align: middle;
+    position: relative;
+}
+
+.airline-logo, .mobile-logo {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    display: block;
+}
         
         /* FIXED: Better aircraft details layout */
         .aircraft-details {
@@ -2115,45 +2129,147 @@ if (ac.presentations && ac.presentations.length > 0) {
 
         // Get logo element
         function getLogoElement(code) {
-            const airline = airlineData[code];
-            if (airline && airline.logo) {
-                const img = document.createElement('img');
-                img.src = airline.logo;
-                img.alt = code;
-                img.className = 'airline-logo';
-                img.onerror = function() {
-                    if (this.parentNode) {
-                        this.parentNode.innerHTML = `<div class="logo-placeholder">${code}</div>`;
-                    }
-                };
-                return img;
-            } else {
-                const div = document.createElement('div');
-                div.className = 'logo-placeholder';
-                div.textContent = code;
-                return div;
+    const airline = airlineData[code];
+    
+    // Create container for better control
+    const container = document.createElement('div');
+    container.className = 'logo-container';
+    container.style.position = 'relative';
+    container.style.width = '80px';
+    container.style.height = '40px';
+    
+    // Always create placeholder first
+    const placeholder = document.createElement('div');
+    placeholder.className = 'logo-placeholder';
+    placeholder.textContent = code;
+    placeholder.style.width = '100%';
+    placeholder.style.height = '100%';
+    placeholder.style.display = 'flex';
+    placeholder.style.alignItems = 'center';
+    placeholder.style.justifyContent = 'center';
+    
+    container.appendChild(placeholder);
+    
+    // Only try to load logo if URL exists
+    if (airline && airline.logo) {
+        const img = document.createElement('img');
+        img.src = airline.logo;
+        img.alt = code;
+        img.className = 'airline-logo';
+        img.style.display = 'none'; // Hidden by default
+        
+        // Add loading attribute for better performance
+        img.setAttribute('loading', 'lazy');
+        
+        img.onload = function() {
+            // Success: hide placeholder, show logo
+            placeholder.style.display = 'none';
+            img.style.display = 'block';
+        };
+        
+        img.onerror = function() {
+            // Error: keep placeholder, remove broken image
+            img.style.display = 'none';
+            placeholder.style.display = 'flex';
+            
+            // Try alternative logo source
+            tryAlternativeLogo(code, img, placeholder);
+        };
+        
+        container.appendChild(img);
+        
+        // Set timeout to show placeholder if image takes too long
+        setTimeout(() => {
+            if (img.style.display === 'none') {
+                placeholder.style.display = 'flex';
             }
+        }, 1000);
+    }
+    
+    return container;
+}
+
+// Try alternative logo sources
+function tryAlternativeLogo(code, imgElement, placeholder) {
+    const alternatives = [
+        `https://www.google.com/s2/favicons?domain=${airlineData[code]?.name?.toLowerCase().replace(/\s+/g, '')}.com&sz=32`,
+        `https://icons.duckduckgo.com/ip2/${airlineData[code]?.name?.toLowerCase().replace(/\s+/g, '')}.com.ico`
+    ];
+    
+    let currentAlternative = 0;
+    
+    function tryNextAlternative() {
+        if (currentAlternative >= alternatives.length) {
+            return; // No more alternatives
         }
+        
+        imgElement.src = alternatives[currentAlternative];
+        currentAlternative++;
+        
+        imgElement.onload = function() {
+            placeholder.style.display = 'none';
+            imgElement.style.display = 'block';
+        };
+        
+        imgElement.onerror = tryNextAlternative;
+    }
+    
+    tryNextAlternative();
+}
 
         // Get mobile logo element
         function getMobileLogoElement(code) {
-            const airline = airlineData[code];
-            if (airline && airline.logo) {
-                const img = document.createElement('img');
-                img.src = airline.logo;
-                img.alt = code;
-                img.className = 'mobile-logo';
-                img.onerror = function() {
-                    this.parentNode.innerHTML = `<div class="mobile-logo-placeholder">${code}</div>`;
-                };
-                return img;
-            } else {
-                const div = document.createElement('div');
-                div.className = 'mobile-logo-placeholder';
-                div.textContent = code;
-                return div;
+    const airline = airlineData[code];
+    
+    // Create container
+    const container = document.createElement('div');
+    container.className = 'mobile-logo-container';
+    container.style.position = 'relative';
+    container.style.width = '40px';
+    container.style.height = '25px';
+    
+    // Placeholder
+    const placeholder = document.createElement('div');
+    placeholder.className = 'mobile-logo-placeholder';
+    placeholder.textContent = code;
+    placeholder.style.width = '100%';
+    placeholder.style.height = '100%';
+    placeholder.style.display = 'flex';
+    placeholder.style.alignItems = 'center';
+    placeholder.style.justifyContent = 'center';
+    placeholder.style.fontSize = '10px';
+    
+    container.appendChild(placeholder);
+    
+    if (airline && airline.logo) {
+        const img = document.createElement('img');
+        img.src = airline.logo;
+        img.alt = code;
+        img.className = 'mobile-logo';
+        img.style.display = 'none';
+        
+        img.onload = function() {
+            placeholder.style.display = 'none';
+            img.style.display = 'block';
+        };
+        
+        img.onerror = function() {
+            img.style.display = 'none';
+            placeholder.style.display = 'flex';
+        };
+        
+        container.appendChild(img);
+        
+        // Timeout fallback
+        setTimeout(() => {
+            if (img.style.display === 'none') {
+                placeholder.style.display = 'flex';
             }
-        }
+        }, 800);
+    }
+    
+    return container;
+}
 
         // CORRECTED: Fleet tab switching function - NOW FOR DELIVERIES
         function switchFleetTab(tabName) {
@@ -3443,6 +3559,7 @@ async function initApp() {
     </script>
 </body>
 </html>
+
 
 
 
