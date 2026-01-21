@@ -1298,58 +1298,6 @@
        </div>
 </div>  <!-- Make sure this closing div exists -->
 
-<script>
-    // ==================== EMERGENCY FUNCTION DEFINITIONS ====================
-        // ADD THIS RIGHT HERE - at the VERY BEGINNING of the script
-        
-        window.login = function() {
-            console.log('🔄 EMERGENCY login() function called');
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-            
-            if (!email || !password) {
-                alert('Please enter both email and password');
-                return;
-            }
-            
-            alert('Login attempt with: ' + email + '\nFull login would connect to backend');
-            
-            // For now, just hide the login form as a test
-            document.getElementById('login-form').style.display = 'none';
-            document.getElementById('auth-status').textContent = 'Logged in (Test)';
-            document.getElementById('auth-user').textContent = email;
-            document.getElementById('login-btn').style.display = 'none';
-            document.getElementById('logout-btn').style.display = 'block';
-        };
-        
-        window.showAddForm = function() {
-            console.log('🔄 EMERGENCY showAddForm() called');
-            alert('Add Aircraft form would open here');
-            // For testing: Show the modal
-            document.getElementById('aircraft-modal').style.display = 'block';
-        };
-        
-        window.showLoginForm = function() {
-            console.log('🔄 EMERGENCY showLoginForm() called');
-            const form = document.getElementById('login-form');
-            if (form) {
-                form.style.display = 'block';
-                // Auto-focus on email
-                const emailField = document.getElementById('login-email');
-                if (emailField) {
-                    setTimeout(() => emailField.focus(), 100);
-                }
-            }
-        };
-        
-        console.log('✅ Emergency functions defined');
-        // ==================== END EMERGENCY FUNCTIONS ====================
-        };
-        
-        console.log('✅ Emergency functions loaded');
-</script>  <!-- ADD THIS CLOSING TAG -->
-
-<script>  <!-- This opens the ORIGINAL main script -->
         // The rest of your existing JavaScript continues here...
         // ==================== MINIMAL BACKEND INTEGRATION ====================
         const API_BASE = 'https://aione-aircraft-tracker-1.onrender.com/api';
@@ -3662,8 +3610,45 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 500);
 });
     </script>
+                <!-- EMERGENCY FUNCTIONS - ADD AT VERY END -->
+<script>
+// Simple emergency login function
+window.login = function() {
+    var email = document.getElementById('login-email').value;
+    var password = document.getElementById('login-password').value;
+    
+    if (!email || !password) {
+        alert('Enter email and password');
+        return;
+    }
+    
+    alert('TEST LOGIN: ' + email);
+    
+    // Update UI
+    document.getElementById('login-form').style.display = 'none';
+    document.getElementById('auth-status').textContent = 'Logged in:';
+    document.getElementById('auth-user').textContent = email;
+    document.getElementById('login-btn').style.display = 'none';
+    document.getElementById('logout-btn').style.display = 'block';
+};
+
+// Simple showAddForm
+window.showAddForm = function() {
+    document.getElementById('aircraft-modal').style.display = 'block';
+};
+
+// Simple showLoginForm
+window.showLoginForm = function() {
+    document.getElementById('login-form').style.display = 'block';
+};
+
+console.log('Emergency functions loaded');
+</script>
 </body>
 </html>
+</body>
+</html>
+
 
 
 
