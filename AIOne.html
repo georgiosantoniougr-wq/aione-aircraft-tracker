@@ -369,31 +369,38 @@
             align-items: center;
             gap: 8px;
         }
-        .airline-logo {
-            max-width: 80px;
-            max-height: 40px;
-            object-fit: contain;
-        }
-        .mobile-logo {
-            max-width: 40px;
-            max-height: 25px;
-        }
-        .logo-placeholder {
-            width: 80px;
-            height: 40px;
-            background: #ecf0f1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            color: #7f8c8d;
-            border-radius: 3px;
-        }
-        .mobile-logo-placeholder {
-            width: 40px;
-            height: 25px;
-            font-size: 10px;
-        }
+       .airline-logo {
+    max-width: 80px;
+    max-height: 40px;
+    object-fit: contain;
+}
+
+.mobile-logo {
+    max-width: 40px;
+    max-height: 25px;
+    object-fit: contain;
+}
+
+.logo-placeholder {
+    width: 80px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    border-radius: 3px;
+}
+
+.mobile-logo-placeholder {
+    width: 40px;
+    height: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 10px;
+    border-radius: 3px;
+}
 
         
         /* FIXED: Better aircraft details layout */
@@ -1425,24 +1432,54 @@
         // ==================== YOUR ORIGINAL JAVASCRIPT ====================
         // Airline data
         const airlineData = {
-            'I2L': { name: 'AERCAP Holdings', logo: 'https://logo.clearbit.com/aercap.com' },
-            'G8E': { name: 'AERCAP Holdings', logo: 'https://logo.clearbit.com/aercap.com' },
-            'ETD': { name: 'Etihad Airways', logo: 'https://logo.clearbit.com/etihad.com' },
-            'QTR': { name: 'Qatar Airways', logo: 'https://logo.clearbit.com/qatarairways.com' },
-            'THA': { name: 'Thai Airways', logo: 'https://logo.clearbit.com/thaiairways.com' },
-            'CHH': { name: 'Hainan Airlines', logo: 'https://logo.clearbit.com/hnair.com' },
-            'SPQ': { name: 'Sun PhuQuoc Airways', logo: '' }, // No logo - will use placeholder
-            'AHY': { name: 'Azerbaijan Airlines', logo: 'https://logo.clearbit.com/azal.az' },
-            'UAL': { name: 'United Airlines', logo: 'https://logo.clearbit.com/united.com' },
-            'DAL': { name: 'Delta Air Lines', logo: 'https://logo.clearbit.com/delta.com' },
-            'QFA': { name: 'Qantas Airways', logo: 'https://logo.clearbit.com/qantas.com.au' },
-            'JST': { name: 'Jetstar Airways', logo: 'https://logo.clearbit.com/jetstar.com' },
-            'WZZ': { name: 'WIZZ Air', logo: 'https://logo.clearbit.com/wizzair.com' },
-            'VIV': { name: 'Viva Aerobus', logo: 'https://logo.clearbit.com/vivaaerobus.com' },
-            'THY': { name: 'Turkish Airlines', logo: 'https://logo.clearbit.com/turkishairlines.com' }
-        };
+    'I2L': { name: 'AERCAP Holdings', logo: '' }, // No logo
+    'G8E': { name: 'AERCAP Holdings', logo: '' }, // No logo
+    'ETD': { name: 'Etihad Airways', logo: 'https://i.imgur.com/7y2Kp3h.png' },
+    'QTR': { name: 'Qatar Airways', logo: 'https://i.imgur.com/9v8X5q2.png' },
+    'THA': { name: 'Thai Airways', logo: 'https://i.imgur.com/6nV7pQo.png' },
+    'CHH': { name: 'Hainan Airlines', logo: 'https://i.imgur.com/3p7Kv9j.png' },
+    'SPQ': { name: 'Sun PhuQuoc Airways', logo: '' }, // No logo
+    'AHY': { name: 'Azerbaijan Airlines', logo: 'https://i.imgur.com/4j6w8Lz.png' },
+    'QFA': { name: 'Qantas Airways', logo: '' }, // No logo
+    'JST': { name: 'Jetstar Airways', logo: '' }, // No logo
+    'WZZ': { name: 'WIZZ Air', logo: '' }, // No logo
+    'VIV': { name: 'Viva Aerobus', logo: '' }, // No logo
+    'THY': { name: 'Turkish Airlines', logo: 'https://i.imgur.com/qz8w4jR.png' }
+};
 
         const airlineCodes = Object.keys(airlineData);
+
+        const airlineCodes = Object.keys(airlineData);
+
+// ========== ADD THIS FUNCTION RIGHT HERE ==========
+// Generate a consistent color from airline code
+function getColorFromCode(code) {
+    if (!code) return '#3498db'; // Default blue
+    
+    // Simple hash to get consistent color
+    let hash = 0;
+    for (let i = 0; i < code.length; i++) {
+        hash = code.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    
+    const colors = [
+        '#3498db', // Blue
+        '#e74c3c', // Red
+        '#2ecc71', // Green
+        '#f39c12', // Orange
+        '#9b59b6', // Purple
+        '#1abc9c', // Teal
+        '#d35400', // Pumpkin
+        '#c0392b', // Dark Red
+        '#16a085', // Dark Teal
+        '#8e44ad'  // Dark Purple
+    ];
+    
+    return colors[Math.abs(hash) % colors.length];
+}
+// ========== END OF FUNCTION ==========
+
+// The next function in your code (probably showSuggestions or something else)
         
      // Load aircraft data - START EMPTY
 let aircraft = [];
@@ -2144,23 +2181,27 @@ if (ac.presentations && ac.presentations.length > 0) {
       function getLogoElement(code) {
     const airline = airlineData[code];
     
-    // If airline exists and has a logo URL, try to load it
-    if (airline && airline.logo) {
+    // Try to load logo from Imgur
+    if (airline && airline.logo && airline.logo.startsWith('https://i.imgur.com/')) {
         const img = document.createElement('img');
         img.src = airline.logo;
         img.alt = code;
         img.className = 'airline-logo';
         
-        // Simple error handling - if logo fails to load, show placeholder
+        // If logo loads successfully, show it
+        img.onload = function() {
+            console.log(`✅ Logo loaded: ${code}`);
+        };
+        
+        // If logo fails, show colored placeholder
         img.onerror = function() {
-            // Create placeholder instead
+            console.log(`❌ Logo failed: ${code}, using colored placeholder`);
             const placeholder = document.createElement('div');
             placeholder.className = 'logo-placeholder';
             placeholder.textContent = code;
             placeholder.style.backgroundColor = getColorFromCode(code);
             placeholder.style.color = 'white';
             
-            // Replace the broken image with placeholder
             if (this.parentNode) {
                 this.parentNode.replaceChild(placeholder, this);
             }
@@ -2168,7 +2209,7 @@ if (ac.presentations && ac.presentations.length > 0) {
         
         return img;
     } else {
-        // No logo URL - just show colored placeholder
+        // No logo - use colored placeholder
         const placeholder = document.createElement('div');
         placeholder.className = 'logo-placeholder';
         placeholder.textContent = code;
@@ -2183,7 +2224,7 @@ if (ac.presentations && ac.presentations.length > 0) {
         function getMobileLogoElement(code) {
     const airline = airlineData[code];
     
-    if (airline && airline.logo) {
+    if (airline && airline.logo && airline.logo.startsWith('https://i.imgur.com/')) {
         const img = document.createElement('img');
         img.src = airline.logo;
         img.alt = code;
@@ -3500,6 +3541,7 @@ async function initApp() {
     </script>
 </body>
 </html>
+
 
 
 
