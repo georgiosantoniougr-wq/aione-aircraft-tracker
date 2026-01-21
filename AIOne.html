@@ -922,7 +922,7 @@
                 <span id="auth-user" style="margin-left: 10px;"></span>
             </div>
             <div class="auth-buttons">
-                <button id="login-btn" class="auth-btn">Login</button>
+               <button id="login-btn" class="auth-btn" onclick="showLoginForm()">Login</button>
                 <button id="logout-btn" class="auth-btn" style="display: none;">Logout</button>
             </div>
         </div>
@@ -1367,10 +1367,24 @@
         }
 
         // Show login form
-        function showLoginForm() {
-            const loginForm = document.getElementById('login-form');
-            if (loginForm) loginForm.style.display = 'block';
+        // Show login form
+function showLoginForm() {
+    console.log('📋 showLoginForm() called');
+    const loginForm = document.getElementById('login-form');
+    if (loginForm) {
+        console.log('✅ Found login form, displaying it');
+        loginForm.style.display = 'block';
+        
+        // Auto-focus on email field for better UX
+        const emailField = document.getElementById('login-email');
+        if (emailField) {
+            setTimeout(() => emailField.focus(), 100);
         }
+    } else {
+        console.error('❌ ERROR: Login form not found!');
+        alert('Login form not found. Please refresh the page.');
+    }
+}
 
         // Hide login form  
         function hideLoginForm() {
@@ -1379,26 +1393,39 @@
         }
 
         // Initialize event listeners when page loads
-        function initEventListeners() {
-            const loginBtn = document.getElementById('login-btn');
-            const logoutBtn = document.getElementById('logout-btn');
-            
-            console.log('Setting up event listeners...');
-            console.log('Login button found:', loginBtn);
-            console.log('Logout button found:', logoutBtn);
-            
-            if (loginBtn) {
-                loginBtn.addEventListener('click', showLoginForm);
-                console.log('Login event listener added successfully');
-            } else {
-                console.log('ERROR: Login button not found!');
-            }
-            
-            if (logoutBtn) {
-                logoutBtn.addEventListener('click', logout);
-                console.log('Logout event listener added successfully');
-            }
-        }
+        // Initialize event listeners when page loads
+function initEventListeners() {
+    console.log('🔧 Setting up event listeners...');
+    
+    // Login button - use both onclick AND event listener for safety
+    const loginBtn = document.getElementById('login-btn');
+    if (loginBtn) {
+        console.log('✅ Found login button');
+        
+        // Remove any existing event listeners by cloning
+        const newLoginBtn = loginBtn.cloneNode(true);
+        loginBtn.parentNode.replaceChild(newLoginBtn, loginBtn);
+        
+        // Add fresh event listener
+        document.getElementById('login-btn').addEventListener('click', function(e) {
+            console.log('🖱️ Login button clicked via event listener');
+            showLoginForm();
+        });
+    } else {
+        console.log('❌ Login button not found!');
+    }
+    
+    // Logout button
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function(e) {
+            console.log('Logout button clicked');
+            logout();
+        });
+    }
+    
+    console.log('✅ Event listeners setup complete');
+}
 
         function updateAuthUI() {
             // FIX: Ensure currentUser is always set from localStorage
@@ -3537,10 +3564,32 @@ async function initApp() {
     }
 }
 
+        // ==================== DEBUG DIAGNOSTICS ====================
+// Add this at the end to check if login system works
+function checkLoginSystem() {
+    console.log('🔍 LOGIN SYSTEM DIAGNOSTICS:');
+    console.log('1. Login button found:', document.getElementById('login-btn'));
+    console.log('2. showLoginForm function exists:', typeof showLoginForm);
+    console.log('3. login function exists:', typeof login);
+    console.log('4. Auth token exists:', !!localStorage.getItem('aione_token'));
+    console.log('5. Current user:', JSON.parse(localStorage.getItem('aione_user') || 'null'));
+    
+    // Test if button has onclick
+    const btn = document.getElementById('login-btn');
+    if (btn) {
+        console.log('6. Button onclick attribute:', btn.getAttribute('onclick'));
+    }
+}
+// Run diagnostics after page loads
+setTimeout(checkLoginSystem, 1000);
+// ==================== END DEBUG ====================
+
+
         window.onload = initApp;
     </script>
 </body>
 </html>
+
 
 
 
