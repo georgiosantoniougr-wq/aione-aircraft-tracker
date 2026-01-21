@@ -395,19 +395,6 @@
             font-size: 10px;
         }
 
-        /* Improved logo container styles - ADD THESE NEW RULES */
-.logo-container, .mobile-logo-container {
-    display: inline-block;
-    vertical-align: middle;
-    position: relative;
-}
-
-.airline-logo, .mobile-logo {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-    display: block;
-}
         
         /* FIXED: Better aircraft details layout */
         .aircraft-details {
@@ -1811,6 +1798,32 @@ if (aircraft.length > 0) {
             return `${hours}:${minutes}`;
         }
 
+        // Generate a consistent color from airline code
+function getColorFromCode(code) {
+    if (!code) return '#3498db'; // Default blue
+    
+    // Simple hash to get consistent color
+    let hash = 0;
+    for (let i = 0; i < code.length; i++) {
+        hash = code.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    
+    const colors = [
+        '#3498db', // Blue
+        '#e74c3c', // Red
+        '#2ecc71', // Green
+        '#f39c12', // Orange
+        '#9b59b6', // Purple
+        '#1abc9c', // Teal
+        '#d35400', // Pumpkin
+        '#c0392b', // Dark Red
+        '#16a085', // Dark Teal
+        '#8e44ad'  // Dark Purple
+    ];
+    
+    return colors[Math.abs(hash) % colors.length];
+}
+
         // Show aircraft add form - WITH AUTH CHECK
         function showAddForm() {
             // AUTH CHECK - Block if not logged in
@@ -2128,147 +2141,75 @@ if (ac.presentations && ac.presentations.length > 0) {
         }
 
         // Get logo element
-        function getLogoElement(code) {
+      function getLogoElement(code) {
     const airline = airlineData[code];
     
-    // Create container for better control
-    const container = document.createElement('div');
-    container.className = 'logo-container';
-    container.style.position = 'relative';
-    container.style.width = '80px';
-    container.style.height = '40px';
-    
-    // Always create placeholder first
-    const placeholder = document.createElement('div');
-    placeholder.className = 'logo-placeholder';
-    placeholder.textContent = code;
-    placeholder.style.width = '100%';
-    placeholder.style.height = '100%';
-    placeholder.style.display = 'flex';
-    placeholder.style.alignItems = 'center';
-    placeholder.style.justifyContent = 'center';
-    
-    container.appendChild(placeholder);
-    
-    // Only try to load logo if URL exists
+    // If airline exists and has a logo URL, try to load it
     if (airline && airline.logo) {
         const img = document.createElement('img');
         img.src = airline.logo;
         img.alt = code;
         img.className = 'airline-logo';
-        img.style.display = 'none'; // Hidden by default
         
-        // Add loading attribute for better performance
-        img.setAttribute('loading', 'lazy');
-        
-        img.onload = function() {
-            // Success: hide placeholder, show logo
-            placeholder.style.display = 'none';
-            img.style.display = 'block';
-        };
-        
+        // Simple error handling - if logo fails to load, show placeholder
         img.onerror = function() {
-            // Error: keep placeholder, remove broken image
-            img.style.display = 'none';
-            placeholder.style.display = 'flex';
+            // Create placeholder instead
+            const placeholder = document.createElement('div');
+            placeholder.className = 'logo-placeholder';
+            placeholder.textContent = code;
+            placeholder.style.backgroundColor = getColorFromCode(code);
+            placeholder.style.color = 'white';
             
-            // Try alternative logo source
-            tryAlternativeLogo(code, img, placeholder);
+            // Replace the broken image with placeholder
+            if (this.parentNode) {
+                this.parentNode.replaceChild(placeholder, this);
+            }
         };
         
-        container.appendChild(img);
-        
-        // Set timeout to show placeholder if image takes too long
-        setTimeout(() => {
-            if (img.style.display === 'none') {
-                placeholder.style.display = 'flex';
-            }
-        }, 1000);
+        return img;
+    } else {
+        // No logo URL - just show colored placeholder
+        const placeholder = document.createElement('div');
+        placeholder.className = 'logo-placeholder';
+        placeholder.textContent = code;
+        placeholder.style.backgroundColor = getColorFromCode(code);
+        placeholder.style.color = 'white';
+        return placeholder;
     }
-    
-    return container;
 }
 
-// Try alternative logo sources
-function tryAlternativeLogo(code, imgElement, placeholder) {
-    const alternatives = [
-        `https://www.google.com/s2/favicons?domain=${airlineData[code]?.name?.toLowerCase().replace(/\s+/g, '')}.com&sz=32`,
-        `https://icons.duckduckgo.com/ip2/${airlineData[code]?.name?.toLowerCase().replace(/\s+/g, '')}.com.ico`
-    ];
-    
-    let currentAlternative = 0;
-    
-    function tryNextAlternative() {
-        if (currentAlternative >= alternatives.length) {
-            return; // No more alternatives
-        }
-        
-        imgElement.src = alternatives[currentAlternative];
-        currentAlternative++;
-        
-        imgElement.onload = function() {
-            placeholder.style.display = 'none';
-            imgElement.style.display = 'block';
-        };
-        
-        imgElement.onerror = tryNextAlternative;
-    }
-    
-    tryNextAlternative();
-}
 
         // Get mobile logo element
         function getMobileLogoElement(code) {
     const airline = airlineData[code];
-    
-    // Create container
-    const container = document.createElement('div');
-    container.className = 'mobile-logo-container';
-    container.style.position = 'relative';
-    container.style.width = '40px';
-    container.style.height = '25px';
-    
-    // Placeholder
-    const placeholder = document.createElement('div');
-    placeholder.className = 'mobile-logo-placeholder';
-    placeholder.textContent = code;
-    placeholder.style.width = '100%';
-    placeholder.style.height = '100%';
-    placeholder.style.display = 'flex';
-    placeholder.style.alignItems = 'center';
-    placeholder.style.justifyContent = 'center';
-    placeholder.style.fontSize = '10px';
-    
-    container.appendChild(placeholder);
     
     if (airline && airline.logo) {
         const img = document.createElement('img');
         img.src = airline.logo;
         img.alt = code;
         img.className = 'mobile-logo';
-        img.style.display = 'none';
-        
-        img.onload = function() {
-            placeholder.style.display = 'none';
-            img.style.display = 'block';
-        };
         
         img.onerror = function() {
-            img.style.display = 'none';
-            placeholder.style.display = 'flex';
+            const placeholder = document.createElement('div');
+            placeholder.className = 'mobile-logo-placeholder';
+            placeholder.textContent = code;
+            placeholder.style.backgroundColor = getColorFromCode(code);
+            placeholder.style.color = 'white';
+            
+            if (this.parentNode) {
+                this.parentNode.replaceChild(placeholder, this);
+            }
         };
         
-        container.appendChild(img);
-        
-        // Timeout fallback
-        setTimeout(() => {
-            if (img.style.display === 'none') {
-                placeholder.style.display = 'flex';
-            }
-        }, 800);
+        return img;
+    } else {
+        const placeholder = document.createElement('div');
+        placeholder.className = 'mobile-logo-placeholder';
+        placeholder.textContent = code;
+        placeholder.style.backgroundColor = getColorFromCode(code);
+        placeholder.style.color = 'white';
+        return placeholder;
     }
-    
-    return container;
 }
 
         // CORRECTED: Fleet tab switching function - NOW FOR DELIVERIES
@@ -3559,6 +3500,7 @@ async function initApp() {
     </script>
 </body>
 </html>
+
 
 
 
