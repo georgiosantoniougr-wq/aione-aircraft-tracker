@@ -920,18 +920,18 @@
 
         <!-- LOGIN FORM (hidden by default) -->
         <div id="login-form" class="login-form" style="display: none;">
-    <form onsubmit="event.preventDefault(); login();">
-        <div class="form-group">
-            <input type="email" id="login-email" placeholder="Email" style="text-transform: none;">
-        </div>
-        <div class="form-group">
-            <input type="password" id="login-password" placeholder="Password">
-        </div>
-        <button type="submit" style="background: #27ae60; color: white; padding: 10px; border: none; border-radius: 5px; width: 100%;">Login</button>
-        <div style="text-align: center; margin-top: 10px;">
-            <small>No account? <a href="https://aione-aircraft-tracker-1.onrender.com/register.html" target="_blank">Register here</a></small>
-        </div>
-    </form>
+   <form onsubmit="event.preventDefault(); login();">
+    <div class="form-group">
+        <input type="email" id="login-email" placeholder="Email" style="text-transform: none;" autocomplete="email">
+    </div>
+    <div class="form-group">
+        <input type="password" id="login-password" placeholder="Password" autocomplete="current-password">
+    </div>
+    <button type="submit" style="background: #27ae60; color: white; padding: 10px; border: none; border-radius: 5px; width: 100%;">Login</button>
+    <div style="text-align: center; margin-top: 10px;">
+        <small>No account? <a href="https://aione-aircraft-tracker-1.onrender.com/register.html" target="_blank">Register here</a></small>
+    </div>
+</form>
 </div>
         
         <div id="overview-view">
@@ -1420,21 +1420,21 @@
         // ==================== YOUR ORIGINAL JAVASCRIPT ====================
         // Airline data
         const airlineData = {
-            'I2L': { name: 'AERCAP Holdings', logo: 'https://logo.clearbit.com/aercap.com' },
-            'G8E': { name: 'AERCAP Holdings', logo: 'https://logo.clearbit.com/aercap.com' },
-            'ETD': { name: 'Etihad Airways', logo: 'https://logo.clearbit.com/etihad.com' },
-            'QTR': { name: 'Qatar Airways', logo: 'https://logo.clearbit.com/qatarairways.com' },
-            'THA': { name: 'Thai Airways', logo: 'https://logo.clearbit.com/thaiairways.com' },
-            'CHH': { name: 'Hainan Airlines', logo: 'https://logo.clearbit.com/hnair.com' },
-            'SPQ': { name: 'Sun PhuQuoc Airways', logo: '' }, // No logo - will use placeholder
-            'AHY': { name: 'Azerbaijan Airlines', logo: 'https://logo.clearbit.com/azal.az' },
-            'UAL': { name: 'United Airlines', logo: 'https://logo.clearbit.com/united.com' },
-            'DAL': { name: 'Delta Air Lines', logo: 'https://logo.clearbit.com/delta.com' },
-            'QFA': { name: 'Qantas Airways', logo: 'https://logo.clearbit.com/qantas.com.au' },
-            'JST': { name: 'Jetstar Airways', logo: 'https://logo.clearbit.com/jetstar.com' },
-            'WZZ': { name: 'WIZZ Air', logo: 'https://logo.clearbit.com/wizzair.com' },
-            'VIV': { name: 'Viva Aerobus', logo: 'https://logo.clearbit.com/vivaaerobus.com' }
-        };
+    'I2L': { name: 'AERCAP Holdings', logo: '' },  // No logo available
+    'G8E': { name: 'AERCAP Holdings', logo: '' },  // No logo available
+    'ETD': { name: 'Etihad Airways', logo: 'https://i.imgur.com/7y2Kp3h.png' },
+    'QTR': { name: 'Qatar Airways', logo: 'https://i.imgur.com/9v8X5q2.png' },
+    'THA': { name: 'Thai Airways', logo: 'https://i.imgur.com/6nV7pQo.png' },
+    'CHH': { name: 'Hainan Airlines', logo: 'https://i.imgur.com/3p7Kv9j.png' },
+    'SPQ': { name: 'Sun PhuQuoc Airways', logo: '' },  // No logo available
+    'AHY': { name: 'Azerbaijan Airlines', logo: 'https://i.imgur.com/4j6w8Lz.png' },
+    'QFA': { name: 'Qantas Airways', logo: 'https://i.imgur.com/8jLwY7r.png' },
+    'JST': { name: 'Jetstar Airways', logo: 'https://i.imgur.com/9kLpZ2m.png' },
+    'WZZ': { name: 'WIZZ Air', logo: 'https://i.imgur.com/2mNqV8p.png' },
+    'VIV': { name: 'Viva Aerobus', logo: 'https://i.imgur.com/3rPq9Xz.png' },
+    'THY': { name: 'Turkish Airlines', logo: 'https://i.imgur.com/qz8w4jR.png' }
+    // Add other airlines as needed with empty string if no logo
+};
 
         const airlineCodes = Object.keys(airlineData);
         
@@ -3378,6 +3378,7 @@ async function initApp() {
     </script>
 </body>
 </html>
+
 
 
 
