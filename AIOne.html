@@ -2099,46 +2099,90 @@ document.getElementById('aircraft-form').addEventListener('submit', async functi
         }
 
         // Get logo element
-        function getLogoElement(code) {
-            const airline = airlineData[code];
-            if (airline && airline.logo) {
-                const img = document.createElement('img');
-                img.src = airline.logo;
-                img.alt = code;
-                img.className = 'airline-logo';
-                img.onerror = function() {
+        // Get logo element - FIXED VERSION
+function getLogoElement(code) {
+    const airline = airlineData[code];
+    if (airline && airline.logo) {
+        const img = document.createElement('img');
+        img.src = airline.logo;
+        img.alt = code;
+        img.className = 'airline-logo';
+        img.onerror = function() {
+            // Create placeholder div
+            const placeholder = document.createElement('div');
+            placeholder.className = 'logo-placeholder';
+            placeholder.textContent = code;
+            
+            // Try to replace the image with placeholder
+            try {
+                // Check if parent exists and has replaceChild method
+                if (this.parentNode && this.parentNode.replaceChild) {
+                    this.parentNode.replaceChild(placeholder, this);
+                } else {
+                    // If we can't replace, just hide the image
+                    this.style.display = 'none';
+                    // Add placeholder after the image if parent exists
                     if (this.parentNode) {
-                        this.parentNode.innerHTML = `<div class="logo-placeholder">${code}</div>`;
+                        this.parentNode.appendChild(placeholder);
                     }
-                };
-                return img;
-            } else {
-                const div = document.createElement('div');
-                div.className = 'logo-placeholder';
-                div.textContent = code;
-                return div;
+                }
+            } catch (e) {
+                // If anything fails, just log it and hide the image
+                console.log('Logo failed to load for:', code, 'Error:', e.message);
+                this.style.display = 'none';
             }
-        }
+        };
+        return img;
+    } else {
+        const div = document.createElement('div');
+        div.className = 'logo-placeholder';
+        div.textContent = code;
+        return div;
+    }
+}
 
         // Get mobile logo element
-        function getMobileLogoElement(code) {
-            const airline = airlineData[code];
-            if (airline && airline.logo) {
-                const img = document.createElement('img');
-                img.src = airline.logo;
-                img.alt = code;
-                img.className = 'mobile-logo';
-                img.onerror = function() {
-                    this.parentNode.innerHTML = `<div class="mobile-logo-placeholder">${code}</div>`;
-                };
-                return img;
-            } else {
-                const div = document.createElement('div');
-                div.className = 'mobile-logo-placeholder';
-                div.textContent = code;
-                return div;
+        // Get mobile logo element - FIXED VERSION
+function getMobileLogoElement(code) {
+    const airline = airlineData[code];
+    if (airline && airline.logo) {
+        const img = document.createElement('img');
+        img.src = airline.logo;
+        img.alt = code;
+        img.className = 'mobile-logo';
+        img.onerror = function() {
+            // Create placeholder div
+            const placeholder = document.createElement('div');
+            placeholder.className = 'mobile-logo-placeholder';
+            placeholder.textContent = code;
+            
+            // Try to replace the image with placeholder
+            try {
+                // Check if parent exists and has replaceChild method
+                if (this.parentNode && this.parentNode.replaceChild) {
+                    this.parentNode.replaceChild(placeholder, this);
+                } else {
+                    // If we can't replace, just hide the image
+                    this.style.display = 'none';
+                    // Add placeholder after the image if parent exists
+                    if (this.parentNode) {
+                        this.parentNode.appendChild(placeholder);
+                    }
+                }
+            } catch (e) {
+                // If anything fails, just log it and hide the image
+                console.log('Mobile logo failed to load for:', code, 'Error:', e.message);
+                this.style.display = 'none';
             }
-        }
+        };
+        return img;
+    } else {
+        const div = document.createElement('div');
+        div.className = 'mobile-logo-placeholder';
+        div.textContent = code;
+        return div;
+    }
+}
 
         // CORRECTED: Fleet tab switching function - NOW FOR DELIVERIES
         function switchFleetTab(tabName) {
@@ -3334,6 +3378,7 @@ async function initApp() {
     </script>
 </body>
 </html>
+
 
 
 
