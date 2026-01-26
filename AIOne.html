@@ -2928,21 +2928,72 @@ async function deleteAircraft(index) {
         }
 
         // Complete presentation
-        function completePresentation(aircraftIndex, presentationIndex) {
-            if (!canEdit()) {
-                alert('You do not have permission to complete presentations');
-                return;
-            }
-            aircraft[aircraftIndex].presentations[presentationIndex].status = 'completed';
-            saveData();
-            updateDashboard();
-            updateMobileLayout();
-            
-            // If we're in detail view, refresh it
-            if (document.getElementById('detail-view').style.display === 'block') {
-                showAircraftDetail(aircraftIndex);
-            }
+        async function completePresentation(aircraftIndex, presentationIndex) {
+    if (!canEdit()) {
+        alert('You do not have permission to complete presentations');
+        return;
+    }
+    
+    try {
+        console.log('🎯 Marking presentation as completed...');
+        console.log('Aircraft Index:', aircraftIndex);
+        console.log('Presentation Index:', presentationIndex);
+        
+        // Update local array
+        if (!aircraft[aircraftIndex].presentations) {
+            aircraft[aircraftIndex].presentations = [];
         }
+        aircraft[aircraftIndex].presentations[presentationIndex].status = 'completed';
+        
+        // Save to backend
+        const aircraftId = aircraft[aircraftIndex].id;
+        const updateData = {
+            presentations: aircraft[aircraftIndex].presentations
+        };
+        
+        console.log('🔄 Saving to backend, aircraft ID:', aircraftId);
+        console.log('Update data:', updateData);
+        
+        const response = await fetch(`${API_BASE}/aircraft/${aircraftId}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updateData)
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(`Backend save failed: ${errorData.error}`);
+        }
+        
+        console.log('✅ Presentation marked as completed successfully');
+        
+        // Refresh UI
+        updateDashboard();
+        updateMobileLayout();
+        
+        // If we're in detail view, refresh it
+        if (document.getElementById('detail-view').style.display === 'block') {
+            showAircraftDetail(aircraftIndex);
+        }
+        
+        // Show success message
+        alert('Presentation marked as completed successfully!');
+        
+    } catch (error) {
+        console.error('❌ Complete presentation error:', error);
+        alert('Failed to mark presentation as done: ' + error.message);
+        
+        // Revert local change if backend save failed
+        if (aircraft[aircraftIndex] && aircraft[aircraftIndex].presentations) {
+            aircraft[aircraftIndex].presentations[presentationIndex].status = 'scheduled';
+        }
+        updateDashboard();
+        updateMobileLayout();
+    }
+}
 
         // Toggle master list
         function toggleMasterList() {
@@ -3281,6 +3332,7 @@ async function initApp() {
     </script>
 </body>
 </html>
+
 
 
 
