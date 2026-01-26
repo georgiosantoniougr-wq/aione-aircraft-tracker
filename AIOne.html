@@ -920,7 +920,7 @@
 
         <!-- LOGIN FORM (hidden by default) -->
         <div id="login-form" class="login-form" style="display: none;">
-   <form onsubmit="event.preventDefault(); login();">
+  <form onsubmit="event.preventDefault(); login();">
     <div class="form-group">
         <input type="email" id="login-email" placeholder="Email" style="text-transform: none;" autocomplete="email">
     </div>
@@ -968,12 +968,13 @@
                     </div>
                     <div class="filter-group">
                         <select id="filter-status" onchange="applyFilters()">
-                            <option value="">All Status</option>
-                            <option value="FAL">FAL</option>
-                            <option value="Delivery">Delivery</option>
-                            <option value="Storage">Storage</option>
-                            <option value="Archived">Archived</option>
-                        </select>
+    <option value="">All Status</option>
+    <option value="FAL">FAL</option>
+    <option value="Delivery">Delivery</option>
+    <option value="Storage">Storage</option>
+    <option value="Section">Section</option>
+    <option value="Archived">Archived</option>
+</select>
                     </div>
                     <button class="clear-filters" onclick="clearFilters()">Clear Filters</button>
                 </div>
@@ -1176,11 +1177,12 @@
                 
                 <div class="form-group">
                     <select id="status">
-                        <option value="FAL">FAL</option>
-                        <option value="Delivery">Delivery</option>
-                        <option value="Storage">Storage</option>
-                        <option value="Archived">Archived</option>
-                    </select>
+    <option value="FAL">FAL</option>
+    <option value="Delivery">Delivery</option>
+    <option value="Storage">Storage</option>
+    <option value="Section">Section</option>
+    <option value="Archived">Archived</option>
+</select>
                 </div>
 
                 <h3>Engine & APU Details</h3>
@@ -3378,6 +3380,7 @@ async function initApp() {
     </script>
 </body>
 </html>
+
 
 
 
