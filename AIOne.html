@@ -920,17 +920,19 @@
 
         <!-- LOGIN FORM (hidden by default) -->
         <div id="login-form" class="login-form" style="display: none;">
-            <div class="form-group">
-                <input type="email" id="login-email" placeholder="Email" style="text-transform: none;">
-            </div>
-            <div class="form-group">
-                <input type="password" id="login-password" placeholder="Password">
-            </div>
-            <button onclick="login()" style="background: #27ae60; color: white; padding: 10px; border: none; border-radius: 5px; width: 100%;">Login</button>
-            <div style="text-align: center; margin-top: 10px;">
-                <small>No account? <a href="https://aione-aircraft-tracker-1.onrender.com/register.html" target="_blank">Register here</a></small>
-            </div>
+    <form onsubmit="event.preventDefault(); login();">
+        <div class="form-group">
+            <input type="email" id="login-email" placeholder="Email" style="text-transform: none;">
         </div>
+        <div class="form-group">
+            <input type="password" id="login-password" placeholder="Password">
+        </div>
+        <button type="submit" style="background: #27ae60; color: white; padding: 10px; border: none; border-radius: 5px; width: 100%;">Login</button>
+        <div style="text-align: center; margin-top: 10px;">
+            <small>No account? <a href="https://aione-aircraft-tracker-1.onrender.com/register.html" target="_blank">Register here</a></small>
+        </div>
+    </form>
+</div>
         
         <div id="overview-view">
             <button class="add-btn" onclick="showAddForm()">Add New Aircraft</button>
@@ -3332,6 +3334,7 @@ async function initApp() {
     </script>
 </body>
 </html>
+
 
 
 
