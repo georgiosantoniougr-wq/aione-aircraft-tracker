@@ -1430,11 +1430,13 @@
     'CHH': { name: 'Hainan Airlines', logo: 'https://i.imgur.com/3p7Kv9j.png' },
     'SPQ': { name: 'Sun PhuQuoc Airways', logo: '' },  // No logo available
     'AHY': { name: 'Azerbaijan Airlines', logo: 'https://i.imgur.com/4j6w8Lz.png' },
-    'QFA': { name: 'Qantas Airways', logo: 'https://i.imgur.com/8jLwY7r.png' },
-    'JST': { name: 'Jetstar Airways', logo: 'https://i.imgur.com/9kLpZ2m.png' },
-    'WZZ': { name: 'WIZZ Air', logo: 'https://i.imgur.com/2mNqV8p.png' },
-    'VIV': { name: 'Viva Aerobus', logo: 'https://i.imgur.com/3rPq9Xz.png' },
-    'THY': { name: 'Turkish Airlines', logo: 'https://i.imgur.com/qz8w4jR.png' }
+    'QFA': { name: 'Qantas Airways', logo: 'https://upload.wikimedia.org/wikipedia/en/4/41/Qantas_logo_1990.png' },
+    'JST': { name: 'Jetstar Airways', logo: 'https://upload.wikimedia.org/wikipedia/commons/6/6e/Jetstar_Logo_2011.svg' },
+    'WZZ': { name: 'WIZZ Air', logo: 'https://upload.wikimedia.org/wikipedia/commons/2/2b/Wizz_Air_logo_2015.svg' },
+    'VIV': { name: 'Viva Aerobus', logo: 'https://upload.wikimedia.org/wikipedia/commons/9/94/Viva_Aerobus_logo.svg' },
+    'THY': { name: 'Turkish Airlines', logo: 'https://upload.wikimedia.org/wikipedia/commons/2/22/Turkish_Airlines_logo_2019_compact.svg' },
+    'UAL': { name: 'United Airlines', logo: 'https://upload.wikimedia.org/wikipedia/commons/4/41/United_Airlines_Logo.svg' },
+    'DAL': { name: 'Delta Air Lines', logo: 'https://upload.wikimedia.org/wikipedia/commons/4/40/Delta_logo_2010.svg' }
     // Add other airlines as needed with empty string if no logo
 };
 
@@ -2057,37 +2059,43 @@ document.getElementById('aircraft-form').addEventListener('submit', async functi
             `;
             
             // Add presentations if any
-            if (ac.presentations && ac.presentations.length > 0) {
-                // SORT presentations alphabetically by type
-                const sortedPresentations = [...ac.presentations].sort((a, b) => a.type.localeCompare(b.type));
-                
-                html += `
-                    <div class="detail-section">
-                        <h3>Presentations (${sortedPresentations.length})</h3>
-                        ${sortedPresentations.map((pres, presIndex) => `
-                            <div class="presentation-item ${pres.completion || 'full'}">
-                                <div class="presentation-details">
-                                    <div><strong>${pres.type}</strong></div>
-                                    <div>${formatDateTime(pres.datetime)}</div>
-                                    <div>Location: ${pres.location || 'N/A'}</div>
-                                    <div>Completion: ${pres.completion || 'full'}</div>
-                                    ${pres.representative ? `<div>Representative: ${pres.representative}</div>` : ''}
-                                    ${pres.qubs ? `<div>QLBs: ${pres.qubs}</div>` : ''}
-                                    ${pres.remarks ? `<div>Remarks: ${pres.remarks}</div>` : ''}
-                                </div>
-                                <div>
-                                    <button class="edit-btn" onclick="editPresentation(${index}, ${presIndex})">Edit</button>
-                                    <button class="archive-btn" onclick="deletePresentation(${index}, ${presIndex})">Delete</button>
-                                    ${pres.status !== 'completed' ? 
-                                        `<button class="done-btn" onclick="completePresentation(${index}, ${presIndex})">Done</button>` : 
-                                        ''
-                                    }
-                                </div>
-                            </div>
-                        `).join('')}
+if (ac.presentations && ac.presentations.length > 0) {
+    // Create array with original indices before sorting
+    const presentationsWithIndices = ac.presentations.map((pres, originalIndex) => ({
+        ...pres,
+        originalIndex
+    }));
+    
+    // Sort alphabetically by type
+    const sortedPresentations = presentationsWithIndices.sort((a, b) => a.type.localeCompare(b.type));
+    
+    html += `
+        <div class="detail-section">
+            <h3>Presentations (${sortedPresentations.length})</h3>
+            ${sortedPresentations.map((pres, sortedIndex) => `
+                <div class="presentation-item ${pres.completion || 'full'}">
+                    <div class="presentation-details">
+                        <div><strong>${pres.type}</strong></div>
+                        <div>${formatDateTime(pres.datetime)}</div>
+                        <div>Location: ${pres.location || 'N/A'}</div>
+                        <div>Completion: ${pres.completion || 'full'}</div>
+                        ${pres.representative ? `<div>Representative: ${pres.representative}</div>` : ''}
+                        ${pres.qubs ? `<div>QLBs: ${pres.qubs}</div>` : ''}
+                        ${pres.remarks ? `<div>Remarks: ${pres.remarks}</div>` : ''}
                     </div>
-                `;
-            }
+                    <div>
+                        <button class="edit-btn" onclick="editPresentation(${index}, ${pres.originalIndex})">Edit</button>
+                        <button class="archive-btn" onclick="deletePresentation(${index}, ${pres.originalIndex})">Delete</button>
+                        ${pres.status !== 'completed' ? 
+                            `<button class="done-btn" onclick="completePresentation(${index}, ${pres.originalIndex})">Done</button>` : 
+                            ''
+                        }
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+}
             
             detailContent.innerHTML = html;
             document.getElementById('overview-view').style.display = 'none';
@@ -3380,6 +3388,7 @@ async function initApp() {
     </script>
 </body>
 </html>
+
 
 
 
