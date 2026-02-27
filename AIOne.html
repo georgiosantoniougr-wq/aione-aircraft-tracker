@@ -2702,13 +2702,66 @@ function updateMobileStats() {
     if (conflictsCount) conflictsCount.textContent = conflictCount;
 }
 
-        // Toggle archive status
-        function toggleArchive(index) {
-            aircraft[index].status = aircraft[index].status === 'Archived' ? 'FAL' : 'Archived';
-            saveData();
-            updateDashboard();
-            updateMobileLayout();
+        // Toggle archive status - FIXED VERSION
+async function toggleArchive(index) {
+    try {
+        console.log('📦 Toggling archive status for aircraft index:', index);
+        
+        // Get current aircraft
+        const aircraftItem = aircraft[index];
+        const oldStatus = aircraftItem.status;
+        const newStatus = aircraftItem.status === 'Archived' ? 'FAL' : 'Archived';
+        
+        console.log('📦 Changing status from:', oldStatus, 'to:', newStatus);
+        
+        // Update local array
+        aircraft[index].status = newStatus;
+        
+        // Save to backend
+        const aircraftId = aircraft[index].id;
+        const updateData = {
+            status: newStatus,
+            msn: aircraftItem.msn,
+            owner: aircraftItem.owner,
+            operator: aircraftItem.operator,
+            deliveryDate: aircraftItem.deliveryDate,
+            presentations: aircraftItem.presentations || []
+            // Include other fields to prevent data loss
+        };
+        
+        console.log('📦 Saving to backend, aircraft ID:', aircraftId);
+        
+        const response = await fetch(`${API_BASE}/aircraft/${aircraftId}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updateData)
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(`Backend save failed: ${errorData.error}`);
         }
+        
+        console.log('✅ Archive status updated successfully');
+        
+        // Refresh UI
+        updateDashboard();
+        updateMobileLayout();
+        
+        // Show success message
+        alert(`Aircraft ${newStatus === 'Archived' ? 'archived' : 'unarchived'} successfully!`);
+        
+    } catch (error) {
+        console.error('❌ Archive toggle error:', error);
+        alert('Failed to update archive status: ' + error.message);
+        
+        // Revert local change if backend save failed
+        loadAircraftFromBackend(); // Reload from backend to ensure correct state
+    }
+}
 
         // FIXED: Delete aircraft - WITH BACKUP METHOD
 async function deleteAircraft(index) {
@@ -3385,6 +3438,7 @@ async function initApp() {
     </script>
 </body>
 </html>
+
 
 
 
